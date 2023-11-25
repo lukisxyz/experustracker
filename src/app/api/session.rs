@@ -1,28 +1,24 @@
+use crate::app::web::handler::HandlerResult;
 use crate::database::model::account::Account;
 use crate::database::model::session::Session;
 use crate::utils::serve_full;
 use cookie::time::Duration;
 use cookie::Cookie;
 use email_address::EmailAddress;
-use http_body_util::combinators::BoxBody;
 use http_body_util::BodyExt;
-use hyper::body::{Bytes, Incoming};
+use hyper::body::Incoming;
 use hyper::header::{COOKIE, SET_COOKIE};
-use hyper::{Error, Request, Response, StatusCode};
+use hyper::{Request, Response, StatusCode};
 use sqlx::postgres::PgRow;
 use sqlx::FromRow;
 use sqlx::{Error::RowNotFound, PgPool};
 use std::collections::HashMap;
-use std::convert::Infallible;
 
 static EMAIL_MISSING: &[u8] = b"Missing field: Email";
 static EMAIL_WRONG_FORMAT: &[u8] = b"Email is not valid";
 static PASSWORD_MISSING: &[u8] = b"Missing field: Password";
 
-pub async fn login_account(
-    req: Request<Incoming>,
-    pool: PgPool,
-) -> Result<Response<BoxBody<Bytes, Infallible>>, Error> {
+pub async fn login_account(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
     let body = req.collect().await?.to_bytes();
     let params = form_urlencoded::parse(body.as_ref())
         .into_owned()
@@ -163,10 +159,7 @@ pub async fn login_account(
     }
 }
 
-pub async fn logout_account(
-    req: Request<Incoming>,
-    pool: PgPool,
-) -> Result<Response<BoxBody<Bytes, Infallible>>, Error> {
+pub async fn logout_account(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
     let headers = req.headers();
     match headers.get(COOKIE) {
         Some(v) => {

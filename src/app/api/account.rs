@@ -1,13 +1,12 @@
+use crate::app::web::handler::HandlerResult;
 use crate::database::model::account::Account;
 use crate::utils::serve_full;
 use email_address::EmailAddress;
-use http_body_util::combinators::BoxBody;
 use http_body_util::BodyExt;
-use hyper::body::{Bytes, Incoming};
-use hyper::{Error, Request, Response, StatusCode};
+use hyper::body::Incoming;
+use hyper::{Request, Response, StatusCode};
 use sqlx::{Error::RowNotFound, PgPool};
 use std::collections::HashMap;
-use std::convert::Infallible;
 
 static EMAIL_MISSING: &[u8] = b"missing field: email";
 static EMAIL_WRONG_FORMAT: &[u8] = b"email is not valid";
@@ -30,10 +29,7 @@ fn is_password_valid(s: &str) -> bool {
     !has_whitespace && has_upper && has_lower && has_digit && s.len() >= 8
 }
 
-pub async fn validate_email(
-    req: Request<Incoming>,
-    pool: PgPool,
-) -> Result<Response<BoxBody<Bytes, Infallible>>, Error> {
+pub async fn validate_email(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
     let body = req.collect().await?.to_bytes();
     let params = form_urlencoded::parse(body.as_ref())
         .into_owned()
@@ -81,9 +77,7 @@ pub async fn validate_email(
         .unwrap());
 }
 
-pub async fn validate_password(
-    req: Request<Incoming>,
-) -> Result<Response<BoxBody<Bytes, Infallible>>, Error> {
+pub async fn validate_password(req: Request<Incoming>) -> HandlerResult {
     let body = req.collect().await?.to_bytes();
     let params = form_urlencoded::parse(body.as_ref())
         .into_owned()
@@ -111,10 +105,7 @@ pub async fn validate_password(
         .unwrap())
 }
 
-pub async fn create_new_account(
-    req: Request<Incoming>,
-    pool: PgPool,
-) -> Result<Response<BoxBody<Bytes, Infallible>>, Error> {
+pub async fn create_new_account(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
     let body = req.collect().await?.to_bytes();
     let params = form_urlencoded::parse(body.as_ref())
         .into_owned()

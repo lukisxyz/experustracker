@@ -20,7 +20,11 @@
 
   <body class="bg-gray-100">
     <header class=""></header>
-    <main hx-ext="response-targets">{% block content %}{% endblock %}</main>
+    <div class="relative overflow-hidden">
+      <div class="w-full max-w-2xl p-4 mx-auto">
+        <main hx-ext="response-targets">{% block content %}{% endblock %}</main>
+      </div>
+    </div>
     <footer class=""></footer>
     <script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
   </body>

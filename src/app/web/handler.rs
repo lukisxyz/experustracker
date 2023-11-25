@@ -9,7 +9,10 @@ use hyper::{
 use sqlx::PgPool;
 use std::{convert::Infallible, fs::File, io::prelude::*, path::PathBuf};
 
-use crate::app::web::{middleware_auth, templates::ProtectedTemplate};
+use crate::app::web::{
+    check_atleast_one_book, middleware_auth,
+    templates::{AddNewBookTemplate, ProtectedTemplate},
+};
 
 use super::templates::{IndexTemplate, LoginTemplate, NotFoundTemplate, RegisterTemplate};
 pub type HandlerResult = Result<Response<BoxBody<Bytes, Infallible>>, Error>;
@@ -104,5 +107,15 @@ pub async fn protected_page(req: Request<Incoming>, pool: PgPool) -> HandlerResu
         return html_str_handler(&html).await;
     }
 
-    middleware_auth(req, pool, f().await).await
+    async fn f2(req: &Request<Incoming>, pool: &PgPool) -> HandlerResult {
+        check_atleast_one_book(&req, &pool, f().await).await
+    }
+
+    middleware_auth(&req, &pool, f2(&req, &pool).await).await
+}
+
+pub async fn add_new_book_page() -> HandlerResult {
+    let template = AddNewBookTemplate::default();
+    let html = template.render().expect("Should render markup");
+    return html_str_handler(&html).await;
 }

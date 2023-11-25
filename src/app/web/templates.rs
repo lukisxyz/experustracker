@@ -19,3 +19,7 @@ pub struct NotFoundTemplate {}
 #[derive(Default, Template)]
 #[template(path = "protected.html")]
 pub struct ProtectedTemplate {}
+
+#[derive(Default, Template)]
+#[template(path = "create-book.html")]
+pub struct AddNewBookTemplate {}

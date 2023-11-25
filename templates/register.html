@@ -1,0 +1,157 @@
+{% extends "skel.html" %} {% block title %}Home{% endblock %} {% block content
+%}
+<!-- Hero -->
+<main class="w-full max-w-md mx-auto p-6">
+  <div
+    class="mt-7 bg-white border text-gray-600 border-gray-200 rounded-xl shadow-sm"
+  >
+    <div class="p-4 sm:p-7">
+      <form
+        hx-post="/api/register"
+        hx-on="htmx:beforeRequest:validatePasswordMatch()"
+      >
+        <div class="text-center mb-10">
+          <h1 class="block text-2xl font-bold text-gray-800">Sign up</h1>
+          <p class="mt-2 text-sm text-gray-600">
+            Already have an account?
+            <a
+              class="text-blue-600 decoration-2 hover:underline font-medium"
+              href="/login"
+            >
+              Sign in here
+            </a>
+          </p>
+        </div>
+        <!-- Form -->
+        <div>
+          <div class="grid gap-y-4">
+            <!-- Form Group -->
+            <div>
+              <label for="email" class="block text-sm mb-2"
+                >Email address</label
+              >
+              <div class="relative">
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  class="py-3 px-4 block w-full border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+                  required
+                  aria-describedby="email-error"
+                  hx-post="/api/register/validate-email"
+                  hx-target-4*="#email-error"
+                  hx-target="#email-error"
+                />
+                <p id="email-error" class="text-xs text-red-600 mt-2"></p>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <label for="password" class="block text-sm mb-2">Password</label>
+              <div class="relative">
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  class="py-3 px-4 block w-full border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+                  required
+                  aria-describedby="password-error"
+                  hx-post="/api/register/validate-password"
+                  hx-target-4*="#password-error"
+                  hx-target="#password-error"
+                />
+                <p id="password-error" class="text-xs text-red-600 mt-2"></p>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <label for="confirm-password" class="block text-sm mb-2"
+                >Confirm Password</label
+              >
+              <div class="relative">
+                <input
+                  type="password"
+                  id="confirm-password"
+                  name="confirm-password"
+                  class="py-3 px-4 block w-full border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+                  required
+                  aria-describedby="confirm-password-error"
+                  oninput="validatePasswordMatch()"
+                />
+                <p
+                  class="text-xs text-red-600 mt-2"
+                  id="confirm-password-error"
+                ></p>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Checkbox -->
+            <div class="flex items-center">
+              <div class="flex">
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  class="shrink-0 mt-0.5 border border-gray-200 rounded text-blue-600 focus:ring-blue-500"
+                />
+              </div>
+              <div class="ms-3">
+                <label for="remember-me" class="text-sm">
+                  I accept the
+                  <a
+                    class="text-blue-600 decoration-2 hover:underline font-medium"
+                    href="#"
+                  >
+                    Terms and Conditions
+                  </a>
+                </label>
+              </div>
+            </div>
+
+            <!-- End Checkbox -->
+            <br />
+            <button
+              type="submit"
+              class="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+            >
+              Sign up
+            </button>
+          </div>
+        </div>
+      </form>
+      <!-- End Form -->
+    </div>
+  </div>
+</main>
+<script>
+  function validatePasswordMatch() {
+    const password = document.getElementById("password").value;
+    const repeatPassword = document.getElementById("confirm-password").value;
+    const passwordMatchError = document.getElementById(
+      "confirm-password-error"
+    );
+    if (password !== repeatPassword) {
+      passwordMatchError.textContent =
+        "Password and confirm password do not match.";
+    } else {
+      passwordMatchError.textContent = "";
+    }
+  }
+  function validateForm(event) {
+    validatePasswordMatch();
+    return document.getElementById("confirm-password-error").textContent === "";
+    event.preventDefault();
+  }
+  document.body.addEventListener("registerSuccess", function (evt) {
+    setTimeout(function () {
+      window.location.replace("/login");
+    }, 5000);
+  });
+</script>
+<!-- End Hero -->
+{% endblock %}

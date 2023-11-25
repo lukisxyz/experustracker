@@ -6,7 +6,7 @@ use log::{error, info};
 use sqlx::postgres::PgPoolOptions;
 use svc::{
     app::config::{self, ArgType, Args},
-    routes::api::api_router,
+    routes::router,
     utils,
 };
 use tokio::net::TcpListener;
@@ -73,7 +73,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                     if let Err(err) = http1::Builder::new()
                         .serve_connection(
                             io,
-                            service_fn(move |req| api_router(req, pool_clone.clone())),
+                            service_fn(move |req| router(req, pool_clone.clone())),
                         )
                         .await
                     {

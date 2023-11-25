@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{% block title %}{% endblock %} - Hype</title>
+    <meta name="Description" content="Site description" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0"
+    />
+    {# this must be a 192px square PNG #} {#
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    #}
+    <link href="https://rsms.me/inter/inter.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/main.css" />
+    <link rel="manifest" href="/manifest.json" />
+    <script src="/htmx.min.js"></script>
+  </head>
+
+  <body class="bg-gray-100">
+    <header class=""></header>
+    <main hx-ext="response-targets">{% block content %}{% endblock %}</main>
+    <footer class=""></footer>
+    <script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
+  </body>
+</html>

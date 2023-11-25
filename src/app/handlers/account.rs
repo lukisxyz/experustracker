@@ -1,3 +1,4 @@
+use crate::database::model::account::Account;
 use crate::utils::serve_full;
 use email_address::EmailAddress;
 use http_body_util::combinators::BoxBody;
@@ -108,4 +109,72 @@ pub async fn validate_password(
         .status(StatusCode::OK)
         .body(serve_full("".as_bytes()))
         .unwrap())
+}
+
+pub async fn create_new_account(
+    req: Request<Incoming>,
+    pool: PgPool,
+) -> Result<Response<BoxBody<Bytes, Infallible>>, Error> {
+    let body = req.collect().await?.to_bytes();
+    let params = form_urlencoded::parse(body.as_ref())
+        .into_owned()
+        .collect::<HashMap<String, String>>();
+    let email = if let Some(e) = params.get("email") {
+        e
+    } else {
+        return Ok(Response::builder()
+            .status(StatusCode::UNPROCESSABLE_ENTITY)
+            .body(serve_full(EMAIL_MISSING))
+            .unwrap());
+    };
+
+    if !EmailAddress::is_valid(&email) {
+        return Ok(Response::builder()
+            .status(StatusCode::UNPROCESSABLE_ENTITY)
+            .body(serve_full(EMAIL_WRONG_FORMAT))
+            .unwrap());
+    }
+
+    let password = if let Some(e) = params.get("password") {
+        e
+    } else {
+        return Ok(Response::builder()
+            .status(StatusCode::UNPROCESSABLE_ENTITY)
+            .body(serve_full(PASSWORD_MISSING))
+            .unwrap());
+    };
+
+    if !is_password_valid(&password) {
+        return Ok(Response::builder()
+            .status(StatusCode::UNPROCESSABLE_ENTITY)
+            .body(serve_full(PASSWORD_WRONG_FORMAT))
+            .unwrap());
+    }
+
+    let new_account = Account::new(&email, password);
+
+    match sqlx::query(
+        "INSERT INTO accounts (id, email, password, code_verification) VALUES ($1, $2, $3, $4)",
+    )
+    .bind(new_account.id.to_bytes())
+    .bind(new_account.email)
+    .bind(new_account.password.expose_secret())
+    .bind(new_account.code_verification)
+    .execute(&pool)
+    .await
+    {
+        Ok(_) => Ok(Response::builder()
+            .status(StatusCode::CREATED)
+            .header("HX-Trigger", "registerSuccess")
+            .body(serve_full(
+                "Success create account, please check your email for verification code",
+            ))
+            .unwrap()),
+        Err(err) => {
+            return Ok(Response::builder()
+                .status(StatusCode::UNPROCESSABLE_ENTITY)
+                .body(serve_full(err.to_string()))
+                .unwrap())
+        }
+    }
 }

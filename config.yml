@@ -1,0 +1,14 @@
+listen:
+  host: 127.0.0.1
+  port: 8080
+  read_timeout: 15
+  write_timeout: 15
+  idle_timeout: 30
+
+db:
+  db_name: postgres
+  host: 127.0.0.1
+  port: 5433
+  ssl_mode: disable
+  password: password
+  username: postgres

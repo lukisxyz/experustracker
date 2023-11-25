@@ -1,0 +1,25 @@
+[package]
+name = "svc"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap="2.33.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.8"
+log = "0.4.20"
+tokio = { version = "1", features = ["full"] }
+env_logger = "0.10.1"
+sqlx = { version = "0.7", features = [ "runtime-tokio", "postgres", "macros", "chrono" ] }
+ulid = { version = "1.1.0", features = [ "serde" ] }
+chrono = { version = "0.4.31", features = [ "serde" ] }
+rand = "0.8.5"
+rust-argon2 = "0.5"
+redact = { version = "0.1", features = ["serde"] }
+http-body-util = "0.1"
+hyper-util = { version = "0.1", features = ["full"] }
+hyper = { version = "1", features = ["full"] }
+form_urlencoded = "1.2.0"
+email_address = "0.2.4"

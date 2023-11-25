@@ -1,10 +1,11 @@
-CREATE TABLE IF NOT EXISTS accounts (
-    id BYTEA PRIMARY KEY,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ,
-    deleted_at TIMESTAMPTZ,
-    password VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    code_verification VARCHAR(255) NOT NULL,
-    email_verified_at TIMESTAMPTZ
+CREATE TABLE sessions (
+    session_id bytea PRIMARY KEY,
+    user_id bytea, 
+    token VARCHAR(255) NOT NULL,
+    issued_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    expire_at TIMESTAMPTZ,
+    ip_address VARCHAR(45),
+    user_agent VARCHAR(255),
+    status BOOLEAN DEFAULT true,
+    FOREIGN KEY (user_id) REFERENCES accounts(id)
 );

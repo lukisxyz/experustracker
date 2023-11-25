@@ -1,0 +1,29 @@
+{% extends "skel.html" %} {% block title %}Home{% endblock %} {% block content
+%}
+<!-- Hero -->
+<div class="relative overflow-hidden">
+  <div class="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="max-w-2xl mx-auto">
+      <h1 class="block text-3xl font-bold text-gray-800">Protected Page</h1>
+      <form hx-post="/api/logout" hx-target-4*="#logout-error">
+        <br />
+        <p id="login-error" class="text-sm text-red-600"></p>
+        <div>
+          <button
+            type="submit"
+            class="w-fit py-3 px-6 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-slate-700 text-white hover:bg-slate-800 disabled:opacity-50 disabled:pointer-events-none"
+          >
+            Sign out
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+  document.body.addEventListener("logoutSuccess", function (evt) {
+    window.location.replace("/login");
+  });
+</script>
+<!-- End Hero -->
+{% endblock %}

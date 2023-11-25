@@ -5,7 +5,10 @@ use hyper::body::{Bytes, Incoming};
 use hyper::{Error, Method, Request, Response, StatusCode};
 use sqlx::PgPool;
 
-use crate::app::web::handler::{image, not_found_page, registration_page, string_handler};
+use crate::app::web::handler::{
+    image, index_page, login_page, not_found_page, protected_page, registration_page,
+    string_handler,
+};
 use crate::utils::serve_empty;
 
 pub async fn web_routes(
@@ -15,8 +18,12 @@ pub async fn web_routes(
     _pool: PgPool,
 ) -> Result<Response<BoxBody<Bytes, Infallible>>, Error> {
     match (method, path) {
+        (&Method::GET, "/") | (&Method::GET, "/index.html") => index_page().await,
         (&Method::GET, "/register") | (&Method::GET, "/register.html") => registration_page().await,
-
+        (&Method::GET, "/login") | (&Method::GET, "/login.html") => login_page().await,
+        (&Method::GET, "/protected") | (&Method::GET, "/protected.html") => {
+            protected_page(_req, _pool).await
+        }
         (&Method::GET, "/main.css") => {
             string_handler(include_str!("../assets/main.css"), "text/css", None).await
         }

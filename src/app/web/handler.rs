@@ -2,13 +2,16 @@ use askama::Template;
 use flate2::{write::ZlibEncoder, Compression};
 use http_body_util::{combinators::BoxBody, BodyExt, Full};
 use hyper::{
-    body::Bytes,
+    body::{Bytes, Incoming},
     header::{CONTENT_ENCODING, CONTENT_TYPE},
-    Error, Response, StatusCode,
+    Error, Request, Response, StatusCode,
 };
+use sqlx::PgPool;
 use std::{convert::Infallible, fs::File, io::prelude::*, path::PathBuf};
 
-use super::templates::{NotFoundTemplate, RegisterTemplate};
+use crate::app::web::{middleware_auth, templates::ProtectedTemplate};
+
+use super::templates::{IndexTemplate, LoginTemplate, NotFoundTemplate, RegisterTemplate};
 pub type HandlerResult = Result<Response<BoxBody<Bytes, Infallible>>, Error>;
 
 fn full<T: Into<Bytes>>(chunk: T) -> BoxBody<Bytes, Infallible> {
@@ -70,8 +73,20 @@ pub async fn image(path_str: &str) -> HandlerResult {
     }
 }
 
+pub async fn index_page() -> HandlerResult {
+    let template = IndexTemplate::default();
+    let html = template.render().expect("Should render markup");
+    html_str_handler(&html).await
+}
+
 pub async fn registration_page() -> HandlerResult {
     let template = RegisterTemplate::default();
+    let html = template.render().expect("Should render markup");
+    html_str_handler(&html).await
+}
+
+pub async fn login_page() -> HandlerResult {
+    let template = LoginTemplate::default();
     let html = template.render().expect("Should render markup");
     html_str_handler(&html).await
 }
@@ -80,4 +95,14 @@ pub async fn not_found_page() -> HandlerResult {
     let template = NotFoundTemplate::default();
     let html = template.render().expect("Should render markup");
     string_handler(&html, "text/html", Some(StatusCode::NOT_FOUND)).await
+}
+
+pub async fn protected_page(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
+    async fn f() -> HandlerResult {
+        let template = ProtectedTemplate::default();
+        let html = template.render().expect("Should render markup");
+        return html_str_handler(&html).await;
+    }
+
+    middleware_auth(req, pool, f().await).await
 }

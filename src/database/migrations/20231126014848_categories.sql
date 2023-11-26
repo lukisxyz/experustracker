@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS categories (
+    id BYTEA PRIMARY KEY,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ,
+    deleted_at TIMESTAMPTZ,
+    is_expense BOOLEAN NOT NULL DEFAULT TRUE,
+    name VARCHAR(50) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    book_id BYTEA REFERENCES books(id) ON DELETE CASCADE
+);

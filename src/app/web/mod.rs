@@ -115,14 +115,14 @@ pub async fn check_atleast_one_book(
                                 } else {
                                     Ok(Response::builder()
                                         .status(StatusCode::SEE_OTHER)
-                                        .header(LOCATION, "/create-book")
+                                        .header(LOCATION, "/book/create")
                                         .body(serve_empty())
                                         .unwrap())
                                 }
                             }
                             Err(_) => Ok(Response::builder()
                                 .status(StatusCode::SEE_OTHER)
-                                .header(LOCATION, "/create-book")
+                                .header(LOCATION, "/book/create")
                                 .body(serve_empty())
                                 .unwrap()),
                         }

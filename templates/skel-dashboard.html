@@ -17,10 +17,17 @@
     <link rel="manifest" href="/manifest.json" />
     <script src="/htmx.min.js"></script>
   </head>
-
-  <body class="bg-gray-100">
+  <body class="bg-slate-100">
     <div class="relative overflow-hidden">
       <div class="w-full max-w-2xl p-4 mx-auto">
+        <header class="flex items-center justify-between">
+          <a
+            href="/create-record"
+            type="button"
+            class="py-2 px-3 inline-flex items-center gap-x-2 rounded-lg bg-slate-700 text-slate-50 shadow-sm hover:bg-slate-800 disabled:opacity-50 disabled:pointer-events-none text-base font-semibold"
+            >New Record
+          </a>
+        </header>
         <main hx-ext="response-targets">{% block content %}{% endblock %}</main>
         <footer class=""></footer>
       </div>

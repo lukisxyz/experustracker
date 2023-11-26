@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "watch": "tailwindcss -i src/assets/tailwind.css -o src/assets/main.css --watch",
+    "tw:gen": "tailwindcss -i src/assets/tailwind.css -o src/assets/main.css",
+    "tw:watch": "tailwindcss -i src/assets/tailwind.css -o src/assets/main.css --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

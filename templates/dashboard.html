@@ -1,14 +1,13 @@
-{% extends "skel.html" %} {% block title %}Home{% endblock %} {% block content
-%}
+{% extends "skel-dashboard.html" %} {% block title %}Home{% endblock %} {% block
+content %}
 <!-- Hero -->
-<h1 class="block text-3xl font-bold text-gray-800">Protected Page</h1>
 <form hx-post="/api/logout" hx-target-4*="#logout-error">
   <br />
   <p id="logout-error" class="text-sm text-red-600"></p>
   <div>
     <button
       type="submit"
-      class="w-fit py-3 px-6 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-slate-700 text-white hover:bg-slate-800 disabled:opacity-50 disabled:pointer-events-none"
+      class="w-fit cursor-pointer py-3 px-6 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-slate-700 text-white hover:bg-slate-800 disabled:opacity-50 disabled:pointer-events-none"
     >
       Sign out
     </button>

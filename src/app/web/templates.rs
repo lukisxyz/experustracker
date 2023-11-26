@@ -17,9 +17,13 @@ pub struct IndexTemplate {}
 pub struct NotFoundTemplate {}
 
 #[derive(Default, Template)]
-#[template(path = "protected.html")]
-pub struct ProtectedTemplate {}
-
-#[derive(Default, Template)]
 #[template(path = "create-book.html")]
 pub struct AddNewBookTemplate {}
+
+#[derive(Default, Template)]
+#[template(path = "add-book-owner.html")]
+pub struct AddBookOwnerTemplate {}
+
+#[derive(Default, Template)]
+#[template(path = "dashboard.html")]
+pub struct DashboardTemplate {}

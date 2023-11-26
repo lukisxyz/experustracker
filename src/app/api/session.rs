@@ -133,7 +133,7 @@ pub async fn login_account(req: Request<Incoming>, pool: PgPool) -> HandlerResul
                 Ok(_) => {
                     let mut c = Cookie::new("session", session.token);
                     c.set_http_only(true);
-                    c.set_max_age(Duration::days(1));
+                    c.set_max_age(Duration::days(7));
                     c.set_path("/");
                     c.set_secure(true);
 

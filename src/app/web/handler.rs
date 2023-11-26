@@ -11,7 +11,7 @@ use std::{convert::Infallible, fs::File, io::prelude::*, path::PathBuf};
 
 use crate::app::web::{
     check_atleast_one_book, middleware_auth,
-    templates::{AddNewBookTemplate, ProtectedTemplate},
+    templates::{AddBookOwnerTemplate, AddNewBookTemplate, DashboardTemplate},
 };
 
 use super::templates::{IndexTemplate, LoginTemplate, NotFoundTemplate, RegisterTemplate};
@@ -100,9 +100,9 @@ pub async fn not_found_page() -> HandlerResult {
     string_handler(&html, "text/html", Some(StatusCode::NOT_FOUND)).await
 }
 
-pub async fn protected_page(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
+pub async fn dashboard_page(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
     async fn f() -> HandlerResult {
-        let template = ProtectedTemplate::default();
+        let template = DashboardTemplate::default();
         let html = template.render().expect("Should render markup");
         return html_str_handler(&html).await;
     }
@@ -114,8 +114,22 @@ pub async fn protected_page(req: Request<Incoming>, pool: PgPool) -> HandlerResu
     middleware_auth(&req, &pool, f2(&req, &pool).await).await
 }
 
-pub async fn add_new_book_page() -> HandlerResult {
-    let template = AddNewBookTemplate::default();
-    let html = template.render().expect("Should render markup");
-    return html_str_handler(&html).await;
+pub async fn add_new_book_page(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
+    async fn f() -> HandlerResult {
+        let template = AddNewBookTemplate::default();
+        let html = template.render().expect("Should render markup");
+        return html_str_handler(&html).await;
+    }
+
+    middleware_auth(&req, &pool, f().await).await
+}
+
+pub async fn add_book_owner_page(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
+    async fn f() -> HandlerResult {
+        let template = AddBookOwnerTemplate::default();
+        let html = template.render().expect("Should render markup");
+        return html_str_handler(&html).await;
+    }
+
+    middleware_auth(&req, &pool, f().await).await
 }

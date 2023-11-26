@@ -3,5 +3,6 @@ CREATE TABLE IF NOT EXISTS books (
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ,
     deleted_at TIMESTAMPTZ,
-    name VARCHAR(50) NOT NULL
+    name VARCHAR(50) NOT NULL,
+    description VARCHAR(255) NOT NULL
 );

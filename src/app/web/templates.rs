@@ -1,5 +1,7 @@
 use askama::Template;
 
+use crate::database::model::book::Book;
+
 #[derive(Default, Template)]
 #[template(path = "register.html")]
 pub struct RegisterTemplate {}
@@ -17,13 +19,27 @@ pub struct IndexTemplate {}
 pub struct NotFoundTemplate {}
 
 #[derive(Default, Template)]
-#[template(path = "create-book.html")]
+#[template(path = "book/create-book.html")]
 pub struct AddNewBookTemplate {}
 
 #[derive(Default, Template)]
-#[template(path = "add-book-owner.html")]
+#[template(path = "book/add-book-owner.html")]
 pub struct AddBookOwnerTemplate {}
 
 #[derive(Default, Template)]
 #[template(path = "dashboard.html")]
 pub struct DashboardTemplate {}
+
+#[derive(Default, Template)]
+#[template(path = "book/books.html")]
+pub struct BookListsBookTemplate<'a> {
+    pub books: &'a [Book],
+}
+
+#[derive(Default, Template)]
+#[template(path = "book/edit-book.html")]
+pub struct EditBookTemplate<'a> {
+    pub id: &'a str,
+    pub name: &'a str,
+    pub description: &'a str,
+}

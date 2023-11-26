@@ -16,6 +16,7 @@ use super::{get_book_default_id, get_session_account_id};
 
 static EMAILS_MISSING: &[u8] =
     b"missing field: email, example: 'example2@gmail.com,example1@gg.com'";
+static ID_MISSING: &[u8] = b"missing field: id";
 static NAME_MISSING: &[u8] = b"missing field: name";
 static DESC_MISSING: &[u8] = b"missing field: description";
 
@@ -69,10 +70,8 @@ pub async fn create_book(req: Request<Incoming>, pool: PgPool) -> HandlerResult 
                         Ok(_) => {
                             tx.commit().await.unwrap();
                             let mut c = Cookie::new("book", new_book.id.to_string());
-                            c.set_http_only(true);
                             c.set_max_age(Duration::days(30 * 12));
                             c.set_path("/");
-                            c.set_secure(true);
                             return Ok(Response::builder()
                                 .status(StatusCode::CREATED)
                                 .header("HX-Trigger", "createbookSuccess")
@@ -173,5 +172,63 @@ pub async fn add_book_owner(req: Request<Incoming>, pool: PgPool) -> HandlerResu
             .status(StatusCode::UNAUTHORIZED)
             .body(serve_empty())
             .unwrap()),
+    }
+}
+
+pub async fn edit_book(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
+    let body = req.collect().await?.to_bytes();
+    let params = form_urlencoded::parse(body.as_ref())
+        .into_owned()
+        .collect::<HashMap<String, String>>();
+    let id = if let Some(e) = params.get("id") {
+        e
+    } else {
+        return Ok(Response::builder()
+            .status(StatusCode::UNPROCESSABLE_ENTITY)
+            .body(serve_full(ID_MISSING))
+            .unwrap());
+    };
+    let name = if let Some(e) = params.get("name") {
+        e
+    } else {
+        return Ok(Response::builder()
+            .status(StatusCode::UNPROCESSABLE_ENTITY)
+            .body(serve_full(NAME_MISSING))
+            .unwrap());
+    };
+
+    let description = if let Some(e) = params.get("description") {
+        e
+    } else {
+        return Ok(Response::builder()
+            .status(StatusCode::UNPROCESSABLE_ENTITY)
+            .body(serve_full(DESC_MISSING))
+            .unwrap());
+    };
+
+    match sqlx::query(
+        "UPDATE books
+        SET name = $2, description = $3, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1",
+    )
+    .bind(Ulid::from_string(&id).unwrap().to_bytes())
+    .bind(name)
+    .bind(description)
+    .execute(&pool)
+    .await
+    {
+        Ok(_) => {
+            return Ok(Response::builder()
+                .status(StatusCode::OK)
+                .header("HX-Trigger", "updateBookSuccess")
+                .body(serve_full("Success edit a book"))
+                .unwrap());
+        }
+        Err(err) => {
+            return Ok(Response::builder()
+                .status(StatusCode::UNPROCESSABLE_ENTITY)
+                .body(serve_full(err.to_string()))
+                .unwrap());
+        }
     }
 }

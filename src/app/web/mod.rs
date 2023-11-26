@@ -10,6 +10,7 @@ use crate::{database::model::session::Session, utils::serve_empty};
 
 use self::handler::HandlerResult;
 
+pub mod book;
 pub mod handler;
 pub mod templates;
 

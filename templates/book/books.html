@@ -1,0 +1,89 @@
+{% extends "../skel.html" %} {% block title %}Home{% endblock %} {% block
+content %}
+<!-- Hero -->
+<br />
+<div class="grid gap-y-4">
+  <h1 class="block text-2xl font-bold text-slate-800">Book Lists</h1>
+  {% if books.is_empty() %}
+  <span class="text-slate-600">Books is empty, add new book</span>
+  <br />
+  <a
+    href="/book/create"
+    class="w-fit py-2 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+  >
+    Create A Book
+  </a>
+  {% else %}
+  <ul>
+    {% for book in books %}
+    <li>
+      <div
+        id="{{book.id}}"
+        class="flex flex-col my-3 relative bg-white border shadow-sm rounded-xl p-3"
+      >
+        <h3 class="text-lg font-bold text-slate-700">{{ book.name }}</h3>
+        <p class="mt-2 text-sm text-slate-600">{{ book.description }}</p>
+        <a
+          class="mt-3 w-fit inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none"
+          href="/book/edit/{{ book.id }}"
+        >
+          Edit
+          <svg
+            class="flex-shrink-0 w-4 h-4"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+        </a>
+        <button
+          id="icon-{{book.id}}"
+          class="mt-3 disabled:text-purple-800 inline-flex w-fit items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:pointer-events-none"
+          onclick="changeCookie('{{ book.id }}')"
+        >
+          Set default
+        </button>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+<script>
+  function changeCookie(bookId) {
+    let currentCookieValue = document.cookie.replace(
+      /(?:(?:^|.*;\s*)book\s*=\s*([^;]*).*$)|^.*$/,
+      "$1"
+    );
+    unsetDefault(currentCookieValue);
+    document.cookie = `book=${bookId}; SameSite=None; Secure`;
+    setDefault(bookId);
+  }
+
+  function setDefault(id) {
+    document.getElementById(id).classList.add("border-purple-600");
+    document.getElementById(`icon-${id}`).disabled = true;
+    document.getElementById(`icon-${id}`).innerText = "Default book";
+  }
+
+  function unsetDefault(id) {
+    document.getElementById(id).classList.remove("border-purple-600");
+    document.getElementById(`icon-${id}`).disabled = false;
+    document.getElementById(`icon-${id}`).innerText = "Set default";
+  }
+
+  let currentCookieValue = document.cookie.replace(
+    /(?:(?:^|.*;\s*)book\s*=\s*([^;]*).*$)|^.*$/,
+    "$1"
+  );
+  setDefault(currentCookieValue);
+</script>
+<!-- End Hero -->
+{% endblock %}

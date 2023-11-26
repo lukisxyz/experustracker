@@ -3,15 +3,26 @@ use flate2::{write::ZlibEncoder, Compression};
 use http_body_util::{combinators::BoxBody, BodyExt, Full};
 use hyper::{
     body::{Bytes, Incoming},
-    header::{CONTENT_ENCODING, CONTENT_TYPE},
+    header::{CONTENT_ENCODING, CONTENT_TYPE, LOCATION},
     Error, Request, Response, StatusCode,
 };
 use sqlx::PgPool;
 use std::{convert::Infallible, fs::File, io::prelude::*, path::PathBuf};
 
-use crate::app::web::{
-    check_atleast_one_book, middleware_auth,
-    templates::{AddBookOwnerTemplate, AddNewBookTemplate, DashboardTemplate},
+use crate::{
+    app::{
+        api::get_session_account_id,
+        web::{
+            book::get_books_by_account_id,
+            check_atleast_one_book, middleware_auth,
+            templates::{
+                AddBookOwnerTemplate, AddNewBookTemplate, BookListsBookTemplate, DashboardTemplate,
+                EditBookTemplate,
+            },
+        },
+    },
+    database::model::book::Book,
+    utils::serve_empty,
 };
 
 use super::templates::{IndexTemplate, LoginTemplate, NotFoundTemplate, RegisterTemplate};
@@ -132,4 +143,33 @@ pub async fn add_book_owner_page(req: Request<Incoming>, pool: PgPool) -> Handle
     }
 
     middleware_auth(&req, &pool, f().await).await
+}
+
+pub async fn book_lists_page(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
+    if let Some(id) = get_session_account_id(&req, &pool).await {
+        let datas = get_books_by_account_id(id, pool).await;
+        let template = BookListsBookTemplate { books: &datas };
+        let html = template.render().expect("Should render markup");
+        return html_str_handler(&html).await;
+    } else {
+        Ok(Response::builder()
+            .status(StatusCode::TEMPORARY_REDIRECT)
+            .header(LOCATION, "/login")
+            .body(serve_empty())
+            .unwrap())
+    }
+}
+
+pub async fn edit_book_page(req: Request<Incoming>, pool: PgPool, book: Book) -> HandlerResult {
+    async fn f(book: Book) -> HandlerResult {
+        let template = EditBookTemplate {
+            id: &book.id.to_string(),
+            name: &book.name,
+            description: &book.description,
+        };
+        let html = template.render().expect("Should render markup");
+        return html_str_handler(&html).await;
+    }
+
+    middleware_auth(&req, &pool, f(book).await).await
 }

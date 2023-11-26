@@ -1,5 +1,5 @@
-{% extends "skel.html" %} {% block title %}Home{% endblock %} {% block content
-%}
+{% extends "../skel.html" %} {% block title %}Home{% endblock %} {% block
+content %}
 <!-- Hero -->
 <form
   class="text-left"
@@ -9,7 +9,7 @@
   <br />
   <div class="max-w-xs mx-auto">
     <div class="grid gap-y-4">
-      <h1 class="block text-2xl font-bold text-gray-800">
+      <h1 class="block text-2xl font-bold text-slate-800">
         Invite People To This Book
       </h1>
       <!-- Form Group -->
@@ -20,7 +20,7 @@
             id="people"
             name="people"
             rows="4"
-            class="py-3 px-4 block w-full border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+            class="py-3 px-4 block w-full border border-slate-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
             required
             aria-describedby="people-error"
           ></textarea>

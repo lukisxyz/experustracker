@@ -269,7 +269,7 @@ pub async fn edit_book(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
         Ok(_) => {
             return Ok(Response::builder()
                 .status(StatusCode::OK)
-                .header("HX-Trigger", "updateBookSuccess")
+                .header("HX-Trigger", "bookChangeSuccess")
                 .body(serve_full("Success edit a book"))
                 .unwrap());
         }
@@ -322,7 +322,7 @@ pub async fn delete_book(req: Request<Incoming>, pool: PgPool, account_id: Ulid)
                     tx.commit().await.unwrap();
                     return Ok(Response::builder()
                         .status(StatusCode::OK)
-                        .header("HX-Trigger", "deletedBookSuccess")
+                        .header("HX-Trigger", "bookChangeSuccess")
                         .body(serve_full("Success delete a book"))
                         .unwrap());
                 }

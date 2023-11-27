@@ -1,6 +1,6 @@
 use askama::Template;
 
-use crate::database::model::book::Book;
+use crate::database::model::{book::Book, category::Category};
 
 #[derive(Default, Template)]
 #[template(path = "register.html")]
@@ -19,6 +19,10 @@ pub struct IndexTemplate {}
 pub struct NotFoundTemplate {}
 
 #[derive(Default, Template)]
+#[template(path = "dashboard.html")]
+pub struct DashboardTemplate {}
+
+#[derive(Default, Template)]
 #[template(path = "book/create-book.html")]
 pub struct AddNewBookTemplate {
     pub is_first_time: bool,
@@ -27,10 +31,6 @@ pub struct AddNewBookTemplate {
 #[derive(Default, Template)]
 #[template(path = "book/add-book-owner.html")]
 pub struct AddBookOwnerTemplate {}
-
-#[derive(Default, Template)]
-#[template(path = "dashboard.html")]
-pub struct DashboardTemplate {}
 
 #[derive(Default, Template)]
 #[template(path = "book/books.html")]
@@ -45,4 +45,24 @@ pub struct EditBookTemplate {
     pub name: String,
     pub description: String,
     pub is_can_delete: bool,
+}
+
+#[derive(Default, Template)]
+#[template(path = "category/categories.html")]
+pub struct CategoryListsBookTemplate<'a> {
+    pub categories: &'a [Category],
+}
+
+#[derive(Default, Template)]
+#[template(path = "category/create-category.html")]
+pub struct AddNewCategoryTemplate {
+    pub id: String,
+}
+
+#[derive(Default, Template)]
+#[template(path = "category/edit-category.html")]
+pub struct EditCategoryTemplate {
+    pub id: String,
+    pub name: String,
+    pub description: String,
 }

@@ -1,0 +1,101 @@
+{% extends "../skel.html" %} {% block title %}Home{% endblock %} {% block
+content %}
+<!-- Hero -->
+<form class="text-left" hx-target-4*="#category-error" hx-post="/api/category">
+  <div class="max-w-xs mx-auto">
+    <div class="grid gap-y-4">
+      <h1 class="block text-2xl font-bold text-slate-800">Create A Category</h1>
+      <!-- Form Group -->
+      <div>
+        <label for="name" class="block text-sm my-2">Name</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          class="py-3 px-4 block w-full border border-slate-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+          required
+          aria-describedby="name-error"
+        />
+      </div>
+      <input type="hidden" id="book_id" name="book_id" value="{{ id }}" />
+      <div>
+        <label for="description" class="block text-sm my-2">Description</label>
+        <textarea
+          id="description"
+          name="description"
+          rows="4"
+          class="py-3 px-4 block w-full border border-slate-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+          required
+          aria-describedby="description-error"
+        ></textarea>
+      </div>
+      <div>
+        <label for="type" class="block text-sm my-2">Type</label>
+        <ul
+          class="items-center w-full text-sm font-medium text-slate-800 bg-white border border-slate-200 rounded-lg sm:flex"
+        >
+          <li
+            class="w-full border-b border-slate-200 sm:border-b-0 sm:border-r"
+          >
+            <div class="flex items-center ps-3">
+              <input
+                id="category-type-expense"
+                type="radio"
+                value="expense"
+                checked="checked"
+                name="type"
+                class="w-4 h-4 text-blue-600 bg-slate-100 border-slate-300 focus:ring-blue-500"
+              />
+              <label
+                for="category-type-expense"
+                class="w-full py-3 ms-2 text-sm font-medium text-slate-800"
+                >Expenses
+              </label>
+            </div>
+          </li>
+          <li
+            class="w-full border-b border-slate-200 sm:border-b-0 sm:border-r"
+          >
+            <div class="flex items-center ps-3">
+              <input
+                id="category-type-income"
+                type="radio"
+                value="income"
+                name="type"
+                class="w-4 h-4 text-blue-600 bg-slate-100 border-slate-300 focus:ring-blue-500"
+              />
+              <label
+                for="category-type-income"
+                class="w-full py-3 ms-2 text-sm font-medium text-slate-800"
+                >Incomes</label
+              >
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <p id="category-error" class="text-xs text-red-600 mt-2"></p>
+    <br />
+    <button
+      type="submit"
+      class="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+    >
+      Create New category
+    </button>
+  </div>
+</form>
+<script>
+  let cb = document.getElementById("set_default");
+  function handleCheck(e) {
+    if (cb.value === "1") {
+      cb.value = "0";
+    } else {
+      cb.value = "1";
+    }
+  }
+  document.body.addEventListener("createcategorySuccess", function (evt) {
+    window.location.replace("/category");
+  });
+</script>
+<!-- End Hero -->
+{% endblock %}

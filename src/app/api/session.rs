@@ -182,11 +182,14 @@ pub async fn logout_account(req: Request<Incoming>, pool: PgPool) -> HandlerResu
                 Ok(_) => {
                     let mut c = Cookie::new("session", "".to_string());
                     c.make_removal();
+                    let mut b = Cookie::new("book", "".to_string());
+                    b.make_removal();
 
                     Ok(Response::builder()
                         .status(StatusCode::OK)
                         .header("HX-Trigger", "logoutSuccess")
                         .header(SET_COOKIE, c.to_string())
+                        .header(SET_COOKIE, b.to_string())
                         .body(serve_full("Success logout"))
                         .unwrap())
                 }

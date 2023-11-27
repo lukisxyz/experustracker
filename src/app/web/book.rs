@@ -123,7 +123,7 @@ pub async fn get_books_by_account_id(id: Ulid, pool: PgPool) -> Vec<Book> {
     }
 }
 
-pub async fn get_books_by_id(id: Ulid, pool: PgPool) -> Option<Book> {
+pub async fn get_book_by_id(id: Ulid, pool: PgPool) -> Option<Book> {
     match sqlx::query(
         "SELECT *
         FROM books

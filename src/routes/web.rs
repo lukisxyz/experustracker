@@ -8,7 +8,10 @@ use sqlx::PgPool;
 use ulid::Ulid;
 
 use crate::app::web::book::{
-    add_book_owner_page, add_new_book_page, book_lists_page, edit_book_page, get_books_by_id,
+    add_book_owner_page, add_new_book_page, book_lists_page, edit_book_page, get_book_by_id,
+};
+use crate::app::web::category::{
+    add_new_category_page, category_lists_page, edit_category_page, get_category_by_id,
 };
 use crate::app::web::handler::{
     dashboard_page, image, index_page, login_page, not_found_page, registration_page,
@@ -31,8 +34,23 @@ pub async fn web_routes(
         (&Method::GET, path) if path.starts_with("/book/edit/") => {
             let id_str = &path[11..];
             let id = Ulid::from_string(id_str).unwrap();
-            if let Some(book) = get_books_by_id(id, pool.clone()).await {
+            if let Some(book) = get_book_by_id(id, pool.clone()).await {
                 edit_book_page(req, pool, book).await
+            } else {
+                Ok(Response::builder()
+                    .status(StatusCode::TEMPORARY_REDIRECT)
+                    .header(LOCATION, "/book")
+                    .body(serve_empty())
+                    .unwrap())
+            }
+        }
+        (&Method::GET, "/category") => category_lists_page(req, pool).await,
+        (&Method::GET, "/category/create") => add_new_category_page(req, pool).await,
+        (&Method::GET, path) if path.starts_with("/category/edit/") => {
+            let id_str = &path[15..];
+            let id = Ulid::from_string(id_str).unwrap();
+            if let Some(category) = get_category_by_id(id, pool.clone()).await {
+                edit_category_page(req, pool, category).await
             } else {
                 Ok(Response::builder()
                     .status(StatusCode::TEMPORARY_REDIRECT)

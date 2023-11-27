@@ -48,7 +48,7 @@ pub async fn check_book_owned(pool: &PgPool, id: Ulid, count: i64) -> bool {
         Ok(b) => {
             return b.book_count == count;
         }
-        Err(e) => false,
+        Err(_) => false,
     }
 }
 

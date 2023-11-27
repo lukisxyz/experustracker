@@ -18,20 +18,157 @@
     <script src="/htmx.min.js"></script>
   </head>
   <body class="bg-slate-100">
-    <div class="relative overflow-hidden">
-      <div class="w-full max-w-xl p-4 mx-auto">
-        <header class="flex items-center justify-between">
-          <a
-            href="/create-record"
+    <div
+      id="menu-overlay"
+      class="z-40 w-screen hidden h-screen bg-black/20 absolute left-0 top-0"
+    ></div>
+    <div class="w-full min-h-screen relative border-x max-w-lg p-4 mx-auto">
+      <header class="flex items-center justify-between">
+        <div>
+          <button
+            onclick="setMenuOpen()"
             type="button"
-            class="py-2 px-3 inline-flex items-center gap-x-2 rounded-lg bg-slate-700 text-slate-50 shadow-sm hover:bg-slate-800 disabled:opacity-50 disabled:pointer-events-none text-base font-semibold"
-            >New Record
-          </a>
-        </header>
-        <main hx-ext="response-targets">{% block content %}{% endblock %}</main>
-        <footer class=""></footer>
-      </div>
+            class="flex justify-center items-center h-10 w-10 text-sm font-semibold rounded-xl text-slate-50 bg-slate-700 shadow-sm hover:text-slate-50 disabled:opacity-50 disabled:pointer-events-none"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M4 6l16 0" />
+              <path d="M4 12l16 0" />
+              <path d="M4 18l16 0" />
+            </svg>
+            <span class="sr-only">Open Sidemenu</span>
+          </button>
+          <div
+            role="menu"
+            id="menu"
+            class="wrapper duration-300 absolute w-[289px] -left-[289px] top-0 z-50 p-4 bg-white"
+          >
+            <div class="w-full flex justify-end mb-6">
+              <div class="py-1">
+                <button
+                  onclick="setMenuOpen()"
+                  type="button"
+                  id="open-menu"
+                  class="flex justify-center items-center h-10 w-10 text-sm font-semibold rounded-xl border border-slate-200 bg-slate-50 text-slate-800 shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:pointer-events-none"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="icon icon-tabler icon-tabler-arrow-right"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M5 12l14 0" />
+                    <path d="M13 18l6 -6" />
+                    <path d="M13 6l6 6" />
+                  </svg>
+                  <span class="sr-only">Open Sidemenu</span>
+                </button>
+                <button
+                  onclick="setMenuClose()"
+                  type="button"
+                  id="close-menu"
+                  class="hidden justify-center items-center h-10 w-10 text-sm font-semibold rounded-xl border border-red-200 bg-red-50 text-red-800 shadow-sm hover:bg-red-50 disabled:opacity-50 disabled:pointer-events-none"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="icon icon-tabler icon-tabler-x"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M18 6l-12 12" />
+                    <path d="M6 6l12 12" />
+                  </svg>
+                  <span class="sr-only">Close Sidemenu</span>
+                </button>
+              </div>
+            </div>
+            {% include "components/menu.html" %}
+            <form hx-post="/api/logout" hx-target-4*="#logout-error">
+              <br />
+              <p id="logout-error" class="text-sm text-red-600"></p>
+              <div>
+                <button
+                  type="submit"
+                  class="w-full cursor-pointer py-3 px-6 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-xl border bg-slate-50 text-slate-700 hover:bg-slate-100 disabled:opacity-50 disabled:pointer-events-none"
+                >
+                  Sign out
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <a
+          href="/record/create"
+          type="button"
+          class="rounded-xl text-slate-700 shadow-sm hover:bg-slate-100 disabled:opacity-50 disabled:pointer-events-none text-base font-semibold"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            class="h-12 w-12"
+            viewBox="0 0 24 24"
+            stroke-width="2"
+            stroke="currentColor"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path
+              d="M12 2l.324 .001l.318 .004l.616 .017l.299 .013l.579 .034l.553 .046c4.785 .464 6.732 2.411 7.196 7.196l.046 .553l.034 .579c.005 .098 .01 .198 .013 .299l.017 .616l.005 .642l-.005 .642l-.017 .616l-.013 .299l-.034 .579l-.046 .553c-.464 4.785 -2.411 6.732 -7.196 7.196l-.553 .046l-.579 .034c-.098 .005 -.198 .01 -.299 .013l-.616 .017l-.642 .005l-.642 -.005l-.616 -.017l-.299 -.013l-.579 -.034l-.553 -.046c-4.785 -.464 -6.732 -2.411 -7.196 -7.196l-.046 -.553l-.034 -.579a28.058 28.058 0 0 1 -.013 -.299l-.017 -.616c-.003 -.21 -.005 -.424 -.005 -.642l.001 -.324l.004 -.318l.017 -.616l.013 -.299l.034 -.579l.046 -.553c.464 -4.785 2.411 -6.732 7.196 -7.196l.553 -.046l.579 -.034c.098 -.005 .198 -.01 .299 -.013l.616 -.017c.21 -.003 .424 -.005 .642 -.005zm0 6a1 1 0 0 0 -1 1v2h-2l-.117 .007a1 1 0 0 0 .117 1.993h2v2l.007 .117a1 1 0 0 0 1.993 -.117v-2h2l.117 -.007a1 1 0 0 0 -.117 -1.993h-2v-2l-.007 -.117a1 1 0 0 0 -.993 -.883z"
+              fill="currentColor"
+              stroke-width="0"
+            />
+          </svg>
+          <span class="sr-only">Create New Record</span>
+        </a>
+      </header>
+      <main hx-ext="response-targets">{% block content %}{% endblock %}</main>
+      <footer class=""></footer>
     </div>
+    <script>
+      let menu = document.getElementById("menu");
+      let menuOverlay = document.getElementById("menu-overlay");
+      let openButton = document.getElementById("open-menu");
+      let closeButton = document.getElementById("close-menu");
+      function setMenuOpen() {
+        menu.classList.replace("-left-[289px]", "left-0");
+        openButton.classList.replace("flex", "hidden");
+        closeButton.classList.replace("hidden", "flex");
+        menuOverlay.classList.replace("hidden", "block");
+      }
+      function setMenuClose() {
+        menu.classList.replace("left-0", "-left-[289px]");
+        closeButton.classList.replace("flex", "hidden");
+        openButton.classList.replace("hidden", "flex");
+        menuOverlay.classList.replace("block", "hidden");
+      }
+    </script>
     <script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
   </body>
 </html>

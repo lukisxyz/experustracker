@@ -7,10 +7,12 @@ use hyper::{Error, Method, Request, Response, StatusCode};
 use sqlx::PgPool;
 use ulid::Ulid;
 
-use crate::app::web::book::get_books_by_id;
+use crate::app::web::book::{
+    add_book_owner_page, add_new_book_page, book_lists_page, edit_book_page, get_books_by_id,
+};
 use crate::app::web::handler::{
-    add_book_owner_page, add_new_book_page, book_lists_page, dashboard_page, edit_book_page, image,
-    index_page, login_page, not_found_page, registration_page, string_handler,
+    dashboard_page, image, index_page, login_page, not_found_page, registration_page,
+    string_handler,
 };
 use crate::utils::serve_empty;
 

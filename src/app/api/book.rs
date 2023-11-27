@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use cookie::{time::Duration, Cookie};
 use http_body_util::BodyExt;
 use hyper::{body::Incoming, header::SET_COOKIE, Request, Response, StatusCode};
-use sqlx::{PgPool, Row};
+use sqlx::{postgres::PgRow, PgPool, Postgres, Row};
 use ulid::Ulid;
 
 use crate::{
@@ -19,6 +19,38 @@ static EMAILS_MISSING: &[u8] =
 static ID_MISSING: &[u8] = b"missing field: id";
 static NAME_MISSING: &[u8] = b"missing field: name";
 static DESC_MISSING: &[u8] = b"missing field: description";
+
+#[derive(Debug)]
+struct AccountBookCount {
+    book_count: i64,
+}
+
+impl<'r> sqlx::FromRow<'r, PgRow> for AccountBookCount {
+    fn from_row(row: &'r PgRow) -> Result<Self, sqlx::Error> {
+        Ok(Self {
+            book_count: row.try_get("book_count")?,
+        })
+    }
+}
+
+pub async fn check_book_owned(pool: &PgPool, id: Ulid, count: i64) -> bool {
+    match sqlx::query_as::<Postgres, AccountBookCount>(
+        "
+        SELECT COUNT(book_id) as book_count
+        FROM account_books
+        WHERE account_id = $1;
+    ",
+    )
+    .bind(id.to_bytes())
+    .fetch_one(pool)
+    .await
+    {
+        Ok(b) => {
+            return b.book_count == count;
+        }
+        Err(e) => false,
+    }
+}
 
 pub async fn create_book(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
     match get_session_account_id(&req, &pool).await {
@@ -45,6 +77,15 @@ pub async fn create_book(req: Request<Incoming>, pool: PgPool) -> HandlerResult 
                     .unwrap());
             };
 
+            let is_default = if let Some(e) = params.get("set_default") {
+                e
+            } else {
+                return Ok(Response::builder()
+                    .status(StatusCode::UNPROCESSABLE_ENTITY)
+                    .body(serve_full(NAME_MISSING))
+                    .unwrap());
+            };
+
             let new_book = Book::new(&name, &description);
 
             let mut tx = pool.begin().await.unwrap();
@@ -68,16 +109,24 @@ pub async fn create_book(req: Request<Incoming>, pool: PgPool) -> HandlerResult 
                     .await
                     {
                         Ok(_) => {
-                            tx.commit().await.unwrap();
-                            let mut c = Cookie::new("book", new_book.id.to_string());
-                            c.set_max_age(Duration::days(30 * 12));
-                            c.set_path("/");
-                            return Ok(Response::builder()
-                                .status(StatusCode::CREATED)
-                                .header("HX-Trigger", "createbookSuccess")
-                                .header(SET_COOKIE, c.to_string())
-                                .body(serve_full("Success create a book"))
-                                .unwrap());
+                            if is_default == "1" {
+                                tx.commit().await.unwrap();
+                                let mut c = Cookie::new("book", new_book.id.to_string());
+                                c.set_max_age(Duration::days(30 * 12));
+                                c.set_path("/");
+                                return Ok(Response::builder()
+                                    .status(StatusCode::CREATED)
+                                    .header("HX-Trigger", "createbookSuccess")
+                                    .header(SET_COOKIE, c.to_string())
+                                    .body(serve_full("Success create a book"))
+                                    .unwrap());
+                            } else {
+                                return Ok(Response::builder()
+                                    .status(StatusCode::CREATED)
+                                    .header("HX-Trigger", "createbookSuccess")
+                                    .body(serve_full("Success create a book"))
+                                    .unwrap());
+                            }
                         }
                         Err(err) => {
                             tx.rollback().await.unwrap();
@@ -225,6 +274,69 @@ pub async fn edit_book(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
                 .unwrap());
         }
         Err(err) => {
+            return Ok(Response::builder()
+                .status(StatusCode::UNPROCESSABLE_ENTITY)
+                .body(serve_full(err.to_string()))
+                .unwrap());
+        }
+    }
+}
+
+pub async fn delete_book(req: Request<Incoming>, pool: PgPool, account_id: Ulid) -> HandlerResult {
+    let body = req.collect().await?.to_bytes();
+    let params = form_urlencoded::parse(body.as_ref())
+        .into_owned()
+        .collect::<HashMap<String, String>>();
+    let book = if let Some(e) = params.get("book_id") {
+        e
+    } else {
+        return Ok(Response::builder()
+            .status(StatusCode::UNPROCESSABLE_ENTITY)
+            .body(serve_empty())
+            .unwrap());
+    };
+    let book_id = Ulid::from_string(&book).unwrap().to_bytes();
+    let mut tx = pool.begin().await.unwrap();
+    match sqlx::query(
+        "UPDATE books
+        SET deleted_at = CURRENT_TIMESTAMP
+        WHERE id = $1",
+    )
+    .bind(book_id)
+    .execute(&mut *tx)
+    .await
+    {
+        Ok(_) => {
+            match sqlx::query(
+                "UPDATE account_books
+                SET deleted_at = CURRENT_TIMESTAMP
+                WHERE account_id = $1
+                    AND book_id = $2",
+            )
+            .bind(account_id.to_bytes())
+            .bind(book_id)
+            .execute(&mut *tx)
+            .await
+            {
+                Ok(_) => {
+                    tx.commit().await.unwrap();
+                    return Ok(Response::builder()
+                        .status(StatusCode::OK)
+                        .header("HX-Trigger", "deletedBookSuccess")
+                        .body(serve_full("Success delete a book"))
+                        .unwrap());
+                }
+                Err(err) => {
+                    tx.rollback().await.unwrap();
+                    return Ok(Response::builder()
+                        .status(StatusCode::UNPROCESSABLE_ENTITY)
+                        .body(serve_full(err.to_string()))
+                        .unwrap());
+                }
+            }
+        }
+        Err(err) => {
+            tx.rollback().await.unwrap();
             return Ok(Response::builder()
                 .status(StatusCode::UNPROCESSABLE_ENTITY)
                 .body(serve_full(err.to_string()))

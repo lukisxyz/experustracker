@@ -4,15 +4,15 @@ content %}
 <br />
 <div class="grid gap-y-4">
   <h1 class="block text-2xl font-bold text-slate-800">Book Lists</h1>
-  {% if books.is_empty() %}
-  <span class="text-slate-600">Books is empty, add new book</span>
-  <br />
   <a
     href="/book/create"
     class="w-fit py-2 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
   >
     Create A Book
   </a>
+  {% if books.is_empty() %}
+  <span class="text-slate-600">Books is empty, add new book</span>
+  <br />
   {% else %}
   <ul>
     {% for book in books %}

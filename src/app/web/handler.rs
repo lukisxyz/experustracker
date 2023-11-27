@@ -11,17 +11,9 @@ use std::{convert::Infallible, fs::File, io::prelude::*, path::PathBuf};
 
 use crate::{
     app::{
-        api::get_session_account_id,
-        web::{
-            book::get_books_by_account_id,
-            check_atleast_one_book, middleware_auth,
-            templates::{
-                AddBookOwnerTemplate, AddNewBookTemplate, BookListsBookTemplate, DashboardTemplate,
-                EditBookTemplate,
-            },
-        },
+        api::book::check_book_owned,
+        web::{middleware_auth, templates::DashboardTemplate},
     },
-    database::model::book::Book,
     utils::serve_empty,
 };
 
@@ -112,45 +104,18 @@ pub async fn not_found_page() -> HandlerResult {
 }
 
 pub async fn dashboard_page(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
-    async fn f() -> HandlerResult {
-        let template = DashboardTemplate::default();
-        let html = template.render().expect("Should render markup");
-        return html_str_handler(&html).await;
-    }
-
-    async fn f2(req: &Request<Incoming>, pool: &PgPool) -> HandlerResult {
-        check_atleast_one_book(&req, &pool, f().await).await
-    }
-
-    middleware_auth(&req, &pool, f2(&req, &pool).await).await
-}
-
-pub async fn add_new_book_page(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
-    async fn f() -> HandlerResult {
-        let template = AddNewBookTemplate::default();
-        let html = template.render().expect("Should render markup");
-        return html_str_handler(&html).await;
-    }
-
-    middleware_auth(&req, &pool, f().await).await
-}
-
-pub async fn add_book_owner_page(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
-    async fn f() -> HandlerResult {
-        let template = AddBookOwnerTemplate::default();
-        let html = template.render().expect("Should render markup");
-        return html_str_handler(&html).await;
-    }
-
-    middleware_auth(&req, &pool, f().await).await
-}
-
-pub async fn book_lists_page(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
-    if let Some(id) = get_session_account_id(&req, &pool).await {
-        let datas = get_books_by_account_id(id, pool).await;
-        let template = BookListsBookTemplate { books: &datas };
-        let html = template.render().expect("Should render markup");
-        return html_str_handler(&html).await;
+    if let Some(id) = middleware_auth(&req, &pool).await {
+        if check_book_owned(&pool, id, 0).await {
+            Ok(Response::builder()
+                .status(StatusCode::SEE_OTHER)
+                .header(LOCATION, "/book/create")
+                .body(serve_empty())
+                .unwrap())
+        } else {
+            let template = DashboardTemplate::default();
+            let html = template.render().expect("Should render markup");
+            return html_str_handler(&html).await;
+        }
     } else {
         Ok(Response::builder()
             .status(StatusCode::TEMPORARY_REDIRECT)
@@ -158,18 +123,4 @@ pub async fn book_lists_page(req: Request<Incoming>, pool: PgPool) -> HandlerRes
             .body(serve_empty())
             .unwrap())
     }
-}
-
-pub async fn edit_book_page(req: Request<Incoming>, pool: PgPool, book: Book) -> HandlerResult {
-    async fn f(book: Book) -> HandlerResult {
-        let template = EditBookTemplate {
-            id: &book.id.to_string(),
-            name: &book.name,
-            description: &book.description,
-        };
-        let html = template.render().expect("Should render markup");
-        return html_str_handler(&html).await;
-    }
-
-    middleware_auth(&req, &pool, f(book).await).await
 }

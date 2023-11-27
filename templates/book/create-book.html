@@ -28,6 +28,22 @@ content %}
           aria-describedby="description-error"
         ></textarea>
       </div>
+
+      {% if is_first_time -%}
+      <input type="hidden" value="1" id="set_default" name="set_default" />
+      {% else -%}
+      <input type="hidden" value="0" id="set_default" name="set_default" />
+      <div class="flex items-center">
+        <input
+          onchange="handleCheck()"
+          type="checkbox"
+          class="shrink-0 mt-0.5 border border-slate-200 rounded text-blue-600 focus:ring-blue-500"
+        />
+        <div class="ms-3">
+          <label for="set_default" class="text-sm"> Set default book </label>
+        </div>
+      </div>
+      {% endif -%}
     </div>
     <p id="book-error" class="text-xs text-red-600 mt-2"></p>
     <br />
@@ -40,6 +56,14 @@ content %}
   </div>
 </form>
 <script>
+  let cb = document.getElementById("set_default");
+  function handleCheck(e) {
+    if (cb.value === "1") {
+      cb.value = "0";
+    } else {
+      cb.value = "1";
+    }
+  }
   document.body.addEventListener("createbookSuccess", function (evt) {
     window.location.replace("/dashboard");
   });

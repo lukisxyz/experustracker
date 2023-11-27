@@ -20,7 +20,9 @@ pub struct NotFoundTemplate {}
 
 #[derive(Default, Template)]
 #[template(path = "book/create-book.html")]
-pub struct AddNewBookTemplate {}
+pub struct AddNewBookTemplate {
+    pub is_first_time: bool,
+}
 
 #[derive(Default, Template)]
 #[template(path = "book/add-book-owner.html")]
@@ -38,8 +40,9 @@ pub struct BookListsBookTemplate<'a> {
 
 #[derive(Default, Template)]
 #[template(path = "book/edit-book.html")]
-pub struct EditBookTemplate<'a> {
-    pub id: &'a str,
-    pub name: &'a str,
-    pub description: &'a str,
+pub struct EditBookTemplate {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub is_can_delete: bool,
 }

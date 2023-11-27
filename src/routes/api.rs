@@ -2,13 +2,15 @@ use std::convert::Infallible;
 
 use http_body_util::combinators::BoxBody;
 use hyper::body::{Bytes, Incoming};
+use hyper::header::LOCATION;
 use hyper::{Error, Method, Request, Response, StatusCode};
 use sqlx::PgPool;
 
 use crate::app::api::account::{create_new_account, validate_email, validate_password};
-use crate::app::api::book::{add_book_owner, create_book, edit_book};
+use crate::app::api::book::{add_book_owner, create_book, delete_book, edit_book};
+use crate::app::api::get_session_account_id;
 use crate::app::api::session::{login_account, logout_account};
-use crate::utils;
+use crate::utils::{self, serve_empty};
 
 pub async fn api_routes(
     method: &Method,
@@ -24,6 +26,17 @@ pub async fn api_routes(
         (&Method::POST, "/api/register/validate-password") => validate_password(req).await,
 
         (&Method::POST, "/api/book") => create_book(req, pool).await,
+        (&Method::DELETE, "/api/book") => {
+            if let Some(account_id) = get_session_account_id(&req, &pool).await {
+                delete_book(req, pool, account_id).await
+            } else {
+                Ok(Response::builder()
+                    .status(StatusCode::TEMPORARY_REDIRECT)
+                    .header(LOCATION, "/login")
+                    .body(serve_empty())
+                    .unwrap())
+            }
+        }
         (&Method::PATCH, "/api/book") => edit_book(req, pool).await,
         (&Method::POST, "/api/book/add-owner") => add_book_owner(req, pool).await,
         _ => {

@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS records (
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ,
     deleted_at TIMESTAMPTZ,
-    amount NUMERIC(10, 2) NOT NULL,
+    amount FLOAT4 NOT NULL,
     notes VARCHAR(255) NOT NULL,
     category_id BYTEA REFERENCES categories(id) ON DELETE CASCADE,
     book_id BYTEA REFERENCES books(id) ON DELETE CASCADE

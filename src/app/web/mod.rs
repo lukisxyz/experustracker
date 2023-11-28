@@ -6,6 +6,8 @@ use ulid::Ulid;
 use crate::database::model::session::Session;
 pub mod book;
 pub mod category;
+pub mod record;
+
 pub mod handler;
 pub mod templates;
 

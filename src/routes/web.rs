@@ -17,6 +17,7 @@ use crate::app::web::handler::{
     dashboard_page, image, index_page, login_page, not_found_page, registration_page,
     string_handler,
 };
+use crate::app::web::record::{add_new_record_page, record_lists_page};
 use crate::utils::serve_empty;
 
 pub async fn web_routes(
@@ -62,6 +63,9 @@ pub async fn web_routes(
         (&Method::GET, "/book/add-owner") | (&Method::GET, "/book/add-book-owner.html") => {
             add_book_owner_page(req, pool).await
         }
+
+        (&Method::GET, "/record") => record_lists_page(req, pool).await,
+        (&Method::GET, "/record/create") => add_new_record_page(req, pool).await,
 
         (&Method::GET, "/dashboard") | (&Method::GET, "/dashboard.html") => {
             dashboard_page(req, pool).await

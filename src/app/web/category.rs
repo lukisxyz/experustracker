@@ -10,7 +10,7 @@ use crate::{
 use super::{
     handler::{html_str_handler, HandlerResult},
     middleware_auth,
-    templates::{AddNewCategoryTemplate, CategoryListsBookTemplate, EditCategoryTemplate},
+    templates::{AddNewCategoryTemplate, CategoryListsTemplate, EditCategoryTemplate},
 };
 
 pub async fn add_new_category_page(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
@@ -67,7 +67,7 @@ pub async fn category_lists_page(req: Request<Incoming>, pool: PgPool) -> Handle
         book_id = id.await.unwrap();
     }
     let datas = get_category_by_book_id(book_id, pool).await;
-    let template = CategoryListsBookTemplate { categories: &datas };
+    let template = CategoryListsTemplate { categories: &datas };
     let html = template.render().expect("Should render markup");
     return html_str_handler(&html).await;
 }

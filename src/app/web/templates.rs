@@ -1,6 +1,6 @@
 use askama::Template;
 
-use crate::database::model::{book::Book, category::Category};
+use crate::database::model::{book::Book, category::Category, record::Record};
 
 #[derive(Default, Template)]
 #[template(path = "register.html")]
@@ -49,7 +49,7 @@ pub struct EditBookTemplate {
 
 #[derive(Default, Template)]
 #[template(path = "category/categories.html")]
-pub struct CategoryListsBookTemplate<'a> {
+pub struct CategoryListsTemplate<'a> {
     pub categories: &'a [Category],
 }
 
@@ -65,4 +65,17 @@ pub struct EditCategoryTemplate {
     pub id: String,
     pub name: String,
     pub description: String,
+}
+
+#[derive(Default, Template)]
+#[template(path = "record/records.html")]
+pub struct RecordListsTemplate<'a> {
+    pub records: &'a [Record],
+}
+
+#[derive(Default, Template)]
+#[template(path = "record/create-record.html")]
+pub struct AddRecordTemplate<'a> {
+    pub id: String,
+    pub categories: &'a [Category],
 }

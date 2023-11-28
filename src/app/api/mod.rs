@@ -8,6 +8,7 @@ use crate::database::model::session::Session;
 pub mod account;
 pub mod book;
 pub mod category;
+pub mod record;
 pub mod session;
 
 pub async fn get_session_account_id(req: &Request<Incoming>, pool: &PgPool) -> Option<Ulid> {

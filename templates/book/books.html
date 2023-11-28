@@ -1,7 +1,6 @@
 {% extends "../skel-dashboard.html" %} {% block title %}Home{% endblock %} {%
 block content %}
 <!-- Hero -->
-<br />
 <div class="grid gap-y-4">
   <h1 class="block text-2xl font-bold text-slate-800">Book Lists</h1>
   <a
@@ -70,13 +69,13 @@ block content %}
   function setDefault(id) {
     document.getElementById(id).classList.add("border-purple-600");
     document.getElementById(`icon-${id}`).disabled = true;
-    document.getElementById(`icon-${id}`).innerText = "Default book";
+    document.getElementById(`icon-${id}`).innerText = "Current book";
   }
 
   function unsetDefault(id) {
     document.getElementById(id).classList.remove("border-purple-600");
     document.getElementById(`icon-${id}`).disabled = false;
-    document.getElementById(`icon-${id}`).innerText = "Set default";
+    document.getElementById(`icon-${id}`).innerText = "Use this book";
   }
 
   let currentCookieValue = document.cookie.replace(

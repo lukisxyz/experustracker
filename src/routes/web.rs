@@ -17,7 +17,9 @@ use crate::app::web::handler::{
     dashboard_page, image, index_page, login_page, not_found_page, registration_page,
     string_handler,
 };
-use crate::app::web::record::{add_new_record_page, record_lists_page};
+use crate::app::web::record::{
+    add_new_record_page, edit_record_page, get_record_by_id, record_lists_page,
+};
 use crate::utils::serve_empty;
 
 pub async fn web_routes(
@@ -66,7 +68,19 @@ pub async fn web_routes(
 
         (&Method::GET, "/record") => record_lists_page(req, pool).await,
         (&Method::GET, "/record/create") => add_new_record_page(req, pool).await,
-
+        (&Method::GET, path) if path.starts_with("/record/edit/") => {
+            let id_str = &path[13..];
+            let id = Ulid::from_string(id_str).unwrap();
+            if let Some(record) = get_record_by_id(id, pool.clone()).await {
+                edit_record_page(req, pool, record).await
+            } else {
+                Ok(Response::builder()
+                    .status(StatusCode::TEMPORARY_REDIRECT)
+                    .header(LOCATION, "/book")
+                    .body(serve_empty())
+                    .unwrap())
+            }
+        }
         (&Method::GET, "/dashboard") | (&Method::GET, "/dashboard.html") => {
             dashboard_page(req, pool).await
         }

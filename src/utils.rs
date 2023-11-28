@@ -2,6 +2,7 @@ use std::convert::Infallible;
 
 use http_body_util::{combinators::BoxBody, BodyExt, Empty, Full};
 use hyper::body::Bytes;
+use num_format::{Locale, ToFormattedString};
 use rand::{Rng, SeedableRng};
 
 pub fn generate_random_string(len: usize) -> String {
@@ -41,4 +42,8 @@ pub fn serve_empty() -> BoxBody<Bytes, Infallible> {
 
 pub fn serve_full<T: Into<Bytes>>(chunk: T) -> BoxBody<Bytes, Infallible> {
     Full::new(chunk.into()).boxed()
+}
+
+pub fn format_rupiah(value: f32) -> String {
+    format!("Rp {}", (value as u32).to_formatted_string(&Locale::id))
 }

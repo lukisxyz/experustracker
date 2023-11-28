@@ -10,7 +10,7 @@ use crate::app::api::account::{create_new_account, validate_email, validate_pass
 use crate::app::api::book::{add_book_owner, create_book, delete_book, edit_book};
 use crate::app::api::category::{create_category, delete_category, edit_category};
 use crate::app::api::get_session_account_id;
-use crate::app::api::record::create_record;
+use crate::app::api::record::{create_record, delete_record, edit_record};
 use crate::app::api::session::{login_account, logout_account};
 use crate::utils::{self, serve_empty};
 
@@ -55,6 +55,8 @@ pub async fn api_routes(
         (&Method::PATCH, "/api/category") => edit_category(req, pool).await,
 
         (&Method::POST, "/api/record") => create_record(req, pool).await,
+        (&Method::PATCH, "/api/record") => edit_record(req, pool).await,
+        (&Method::DELETE, "/api/record") => delete_record(req, pool).await,
         _ => {
             let mut not_found = Response::new(utils::serve_empty());
             *not_found.status_mut() = StatusCode::NOT_FOUND;

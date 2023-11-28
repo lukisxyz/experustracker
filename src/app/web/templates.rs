@@ -67,15 +67,31 @@ pub struct EditCategoryTemplate {
     pub description: String,
 }
 
+pub struct RecordWithRupiah {
+    pub record: Record,
+    pub amount_in_rupiah: String,
+    pub formatted_date: String,
+}
+
 #[derive(Default, Template)]
 #[template(path = "record/records.html")]
 pub struct RecordListsTemplate<'a> {
-    pub records: &'a [Record],
+    pub records: &'a [RecordWithRupiah],
 }
 
 #[derive(Default, Template)]
 #[template(path = "record/create-record.html")]
 pub struct AddRecordTemplate<'a> {
     pub id: String,
+    pub categories: &'a [Category],
+}
+
+#[derive(Default, Template)]
+#[template(path = "record/edit-record.html")]
+pub struct EditRecordTemplate<'a> {
+    pub id: String,
+    pub notes: String,
+    pub category_id: String,
+    pub amount: f32,
     pub categories: &'a [Category],
 }

@@ -14,6 +14,7 @@ pub struct Record {
     pub book_id: Ulid,
     #[serde(with = "ulid_as_u128")]
     pub category_id: Ulid,
+    pub category_name: String,
     pub notes: String,
     pub amount: f32,
 
@@ -30,6 +31,7 @@ impl Record {
         Self {
             id,
             created_at,
+            category_name: "".to_string(),
             updated_at: None,
             deleted_at: None,
             book_id,
@@ -44,6 +46,7 @@ impl FromRow<'_, PgRow> for Record {
     fn from_row(row: &'_ PgRow) -> Result<Self, sqlx::Error> {
         let id: [u8; 16] = row.get("id");
         let category_id: [u8; 16] = row.get("category_id");
+        let category_name: String = row.get("category_name");
         let book_id: [u8; 16] = row.get("book_id");
         let notes: String = row.get("notes");
         let amount: f32 = row.get("amount");
@@ -66,6 +69,7 @@ impl FromRow<'_, PgRow> for Record {
             category_id: Ulid::from_bytes(category_id),
             notes,
             amount,
+            category_name,
         };
         Ok(res)
     }

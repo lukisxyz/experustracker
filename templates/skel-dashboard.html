@@ -149,6 +149,9 @@
       <footer class=""></footer>
     </div>
     <script>
+      document.body.addEventListener("logoutSuccess", function (evt) {
+        window.location.replace("/login");
+      });
       let menu = document.getElementById("menu");
       let menuOverlay = document.getElementById("menu-overlay");
       let openButton = document.getElementById("open-menu");

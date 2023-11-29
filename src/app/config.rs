@@ -129,6 +129,7 @@ fn load_cfg_from_file(file_path: &str) -> Result<Config, Box<dyn error::Error>> 
     if Path::new(file_path).exists() {
         let content = std::fs::read_to_string(file_path)?;
         let cfg: Config = serde_yaml::from_str(&content)?;
+        eprint!("Makanan enak {:?}", cfg);
         Ok(cfg)
     } else {
         Err("config file not found".into())
@@ -139,13 +140,13 @@ pub fn load(file_path: &str) -> Config {
     let mut cfg = Config::default();
     cfg.load_from_env();
 
-    if let Err(err) = load_cfg_from_file(file_path) {
-        warn!(
+    match load_cfg_from_file(file_path) {
+        Ok(c) => cfg = c,
+        Err(err) => warn!(
             "cannot load config file: {}. using defaults. error: {:?}",
             file_path, err
-        );
+        ),
     }
-
     cfg
 }
 

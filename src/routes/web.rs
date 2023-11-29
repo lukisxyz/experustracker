@@ -3,15 +3,12 @@ use crate::app::middlewares::session::auth_middleware;
 use crate::app::web::book::{page_book_add_owner, page_book_create, page_book_edit, page_books};
 use crate::app::web::category::{page_categories, page_category_create, page_category_edit};
 use crate::app::web::common::{
-    image, page_dashboard, page_index, page_not_found, page_signup, string_handler,
+    image, page_dashboard, page_index, page_not_found, page_signin, page_signup, string_handler,
 };
-use crate::app::web::record::{
-    add_new_record_page, edit_record_page, get_record_by_id, record_lists_page,
-};
+use crate::app::web::record::{page_record_create, page_record_edit, page_records};
 use crate::utils::serve_empty;
 use http_body_util::combinators::BoxBody;
 use hyper::body::{Bytes, Incoming};
-use hyper::header::LOCATION;
 use hyper::{Error, Method, Request, Response, StatusCode};
 use sqlx::PgPool;
 use std::convert::Infallible;
@@ -26,7 +23,7 @@ pub async fn web_routes(
     match (method, path) {
         (&Method::GET, "/") | (&Method::GET, "/index.html") => page_index().await,
         (&Method::GET, "/register") | (&Method::GET, "/register.html") => page_signup().await,
-        (&Method::GET, "/login") | (&Method::GET, "/login.html") => page_index().await,
+        (&Method::GET, "/login") | (&Method::GET, "/login.html") => page_signin().await,
 
         // book routes
         (&Method::GET, "/book") => auth_middleware(req, pool, page_books).await,
@@ -73,20 +70,23 @@ pub async fn web_routes(
             auth_middleware(req, pool, run).await
         }
 
-        (&Method::GET, "/record") => record_lists_page(req, pool).await,
-        (&Method::GET, "/record/create") => add_new_record_page(req, pool).await,
+        (&Method::GET, "/record") => auth_middleware(req, pool, page_records).await,
+        (&Method::GET, "/record/create") => auth_middleware(req, pool, page_record_create).await,
         (&Method::GET, path) if path.starts_with("/record/edit/") => {
-            let id_str = &path[13..];
-            let id = Ulid::from_string(id_str).unwrap();
-            if let Some(record) = get_record_by_id(id, pool.clone()).await {
-                edit_record_page(req, pool, record).await
-            } else {
-                Ok(Response::builder()
-                    .status(StatusCode::TEMPORARY_REDIRECT)
-                    .header(LOCATION, "/book")
-                    .body(serve_empty())
-                    .unwrap())
-            }
+            let p = path;
+            let run = move |req: Request<Incoming>, pool: PgPool, _: Ulid| async move {
+                id_params_middleware(
+                    req,
+                    pool,
+                    15,
+                    "/category".to_string(),
+                    p.to_owned(),
+                    page_record_edit,
+                )
+                .await
+            };
+
+            auth_middleware(req, pool, run).await
         }
         (&Method::GET, "/dashboard") | (&Method::GET, "/dashboard.html") => {
             page_dashboard(req, pool).await

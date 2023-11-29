@@ -37,6 +37,85 @@ impl Category {
             is_expense,
         }
     }
+
+    pub fn batch(book_id: Ulid) -> Vec<Self> {
+        let predefined_categories = [
+            ("Salary/Wages", "Your regular income from your job.", false),
+            (
+                "Freelance/Contract Work",
+                "Income from any freelance or contract work you may do.",
+                false,
+            ),
+            (
+                "Side Hustle",
+                "Income from any side businesses or projects you're involved in.",
+                false,
+            ),
+            (
+                "Investment Income",
+                "Dividends, interest, or other income generated from investments.",
+                false,
+            ),
+            (
+                "Gifts/Donations",
+                "Any money received as gifts or donations.",
+                false,
+            ),
+            (
+                "Rental Income",
+                "If you earn income from renting out property.",
+                false,
+            ),
+            ("Rent/Mortgage", "Monthly rent", true),
+            ("Property Taxes", "Property tax payments", true),
+            ("Home Insurance", "Insurance for your home", true),
+            ("Electricity", "Monthly electricity bill", true),
+            ("Water", "Monthly water bill", true),
+            ("Gas", "Monthly gas bill", true),
+            ("Internet/Phone", "Internet and phone bills", true),
+            ("Car Payment", "Monthly car loan payment", true),
+            ("Gas", "Gas expenses for your vehicle", true),
+            ("Insurance", "Vehicle insurance", true),
+            ("Public Transportation", "Public transportation costs", true),
+            ("Food", "Grocery expenses", true),
+            ("Household Supplies", "Expenses for household items", true),
+            ("Health Insurance", "Health insurance premiums", true),
+            ("Medications", "Costs for medications", true),
+            ("Doctor's Visits", "Medical check-up expenses", true),
+            ("Dining Out", "Expenses for dining out", true),
+            ("Movies", "Entertainment expenses for movies", true),
+            ("Subscriptions", "(Netflix, Spotify, etc.)", true),
+            (
+                "Credit Card Payments",
+                "Payments towards credit card balances",
+                true,
+            ),
+            ("Loan Payments", "Monthly loan payments", true),
+            ("Haircuts", "Cost of haircuts", true),
+            ("Toiletries", "Expenses for toiletries", true),
+            (
+                "Emergency Fund Contributions",
+                "Contributions to your emergency fund",
+                true,
+            ),
+            ("Retirement Savings", "Savings for retirement", true),
+            ("Tuition", "Education tuition fees", true),
+            ("Books", "Costs for educational books", true),
+            ("Courses", "Expenses for additional courses", true),
+            (
+                "Miscellaneous",
+                "Any other expenses not covered in the above categories.",
+                true,
+            ),
+        ];
+
+        predefined_categories
+            .iter()
+            .map(|&(name, description, is_expense)| {
+                Self::new(name, description, is_expense, book_id)
+            })
+            .collect()
+    }
 }
 
 impl FromRow<'_, PgRow> for Category {

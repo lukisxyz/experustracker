@@ -31,9 +31,9 @@ pub async fn api_routes(
         (&Method::POST, "/api/category") => auth_middleware(req, pool, create_category).await,
         (&Method::DELETE, "/api/category") => auth_middleware(req, pool, delete_category).await,
         (&Method::PATCH, "/api/category") => auth_middleware(req, pool, edit_category).await,
-        (&Method::POST, "/api/record") => create_record(req, pool).await,
-        (&Method::PATCH, "/api/record") => edit_record(req, pool).await,
-        (&Method::DELETE, "/api/record") => delete_record(req, pool).await,
+        (&Method::POST, "/api/record") => auth_middleware(req, pool, create_record).await,
+        (&Method::PATCH, "/api/record") => auth_middleware(req, pool, edit_record).await,
+        (&Method::DELETE, "/api/record") => auth_middleware(req, pool, delete_record).await,
         _ => {
             let mut not_found = Response::new(serve_empty());
             *not_found.status_mut() = StatusCode::NOT_FOUND;

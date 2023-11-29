@@ -77,19 +77,19 @@ pub async fn get_count(pool: &PgPool, id: Ulid) -> i64 {
     }
 }
 
-pub async fn save(pool: &PgPool, account_id: Ulid, b: Book) -> Result<(), BoxDynError> {
+pub async fn save(pool: &PgPool, account_id: Ulid, book: Book) -> Result<(), BoxDynError> {
     let mut tx = pool.begin().await.unwrap();
     match sqlx::query("INSERT INTO books (id, name, description) VALUES ($1, $2, $3) RETURNING *;")
-        .bind(b.id.to_bytes())
-        .bind(b.name)
-        .bind(b.description)
+        .bind(book.id.to_bytes())
+        .bind(book.name)
+        .bind(book.description)
         .execute(&mut *tx)
         .await
     {
         Ok(_) => {
             match sqlx::query("INSERT INTO account_books (account_id, book_id) VALUES ($1, $2)")
                 .bind(account_id.to_bytes())
-                .bind(b.id.to_bytes())
+                .bind(book.id.to_bytes())
                 .execute(&mut *tx)
                 .await
             {

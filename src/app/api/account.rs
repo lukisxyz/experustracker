@@ -1,9 +1,14 @@
 use crate::app::web::common::HandlerResult;
 use crate::database::model::account::Account;
+use crate::database::model::book::Book;
+use crate::database::model::category::Category;
 use crate::utils::serve_full;
+use cookie::time::Duration;
+use cookie::Cookie;
 use email_address::EmailAddress;
 use http_body_util::BodyExt;
 use hyper::body::Incoming;
+use hyper::header::SET_COOKIE;
 use hyper::{Request, Response, StatusCode};
 use sqlx::{Error::RowNotFound, PgPool};
 use std::collections::HashMap;
@@ -141,8 +146,8 @@ pub async fn create_account(req: Request<Incoming>, pool: PgPool) -> HandlerResu
             .unwrap());
     }
 
+    let mut tx = pool.begin().await.unwrap();
     let new_account = Account::new(&email, password);
-
     match sqlx::query(
         "INSERT INTO accounts (id, email, password, code_verification) VALUES ($1, $2, $3, $4)",
     )
@@ -150,21 +155,88 @@ pub async fn create_account(req: Request<Incoming>, pool: PgPool) -> HandlerResu
     .bind(new_account.email)
     .bind(new_account.password.expose_secret())
     .bind(new_account.code_verification)
-    .execute(&pool)
+    .execute(&mut *tx)
     .await
     {
-        Ok(_) => Ok(Response::builder()
-            .status(StatusCode::CREATED)
-            .header("HX-Trigger", "registerSuccess")
-            .body(serve_full(
-                "Success create account, please check your email for verification code",
-            ))
-            .unwrap()),
+        Ok(_) => {
+            let new_book = Book::new("Main", "Main book");
+            let id = new_book.id.clone();
+            match sqlx::query(
+                "INSERT INTO books (id, name, description) VALUES ($1, $2, $3) RETURNING *;",
+            )
+            .bind(new_book.id.to_bytes())
+            .bind(new_book.name)
+            .bind(new_book.description)
+            .execute(&mut *tx)
+            .await
+            {
+                Ok(_) => {
+                    match sqlx::query(
+                        "INSERT INTO account_books (account_id, book_id) VALUES ($1, $2) ON CONFLICT (account_id, book_id) DO NOTHING"
+                    ).bind(&new_account.id.to_bytes())
+                    .bind(&new_book.id.to_bytes())
+                    .execute(&mut *tx)
+                    .await {
+                        Ok(_) => {
+                            let categories = Category::batch(id);
+                            for c in categories {
+                                match sqlx::query(
+                                    "INSERT INTO categories (id, name, description, is_expense, book_id) VALUES ($1, $2, $3, $4, $5)",
+                                )
+                                .bind(c.id.to_bytes())
+                                .bind(c.name)
+                                .bind(c.description)
+                                .bind(c.is_expense)
+                                .bind(c.book_id.to_bytes())
+                                .execute(&mut *tx)
+                                .await {
+                                    Ok(_) => {}
+                                    Err(err) => {
+                                        let _ = tx.rollback().await;
+                                        return Ok(Response::builder()
+                                            .status(StatusCode::UNPROCESSABLE_ENTITY)
+                                            .body(serve_full(err.to_string()))
+                                            .unwrap());
+                                    }
+                                }
+                            }
+                            let _ = tx.commit().await;
+                            let mut c = Cookie::new("book", new_book.id.to_string());
+                            c.set_max_age(Duration::days(30 * 12));
+                            c.set_path("/");
+                            Ok(Response::builder()
+                                .status(StatusCode::CREATED)
+                                .header("HX-Trigger", "registerSuccess")
+                                .header(SET_COOKIE, c.to_string())
+                                .body(serve_full(
+                                    "Success create account, please check your email for verification code",
+                                ))
+                                .unwrap())
+                            },
+                        Err(err) => {
+                            let _ = tx.rollback().await;
+                            return Ok(Response::builder()
+                                .status(StatusCode::UNPROCESSABLE_ENTITY)
+                                .body(serve_full(err.to_string()))
+                                .unwrap());
+                        },
+                    }
+                }
+                Err(err) => {
+                    let _ = tx.rollback().await;
+                    return Ok(Response::builder()
+                        .status(StatusCode::UNPROCESSABLE_ENTITY)
+                        .body(serve_full(err.to_string()))
+                        .unwrap());
+                }
+            }
+        }
         Err(err) => {
+            let _ = tx.rollback().await;
             return Ok(Response::builder()
                 .status(StatusCode::UNPROCESSABLE_ENTITY)
                 .body(serve_full(err.to_string()))
-                .unwrap())
+                .unwrap());
         }
     }
 }

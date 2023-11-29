@@ -129,7 +129,6 @@ fn load_cfg_from_file(file_path: &str) -> Result<Config, Box<dyn error::Error>> 
     if Path::new(file_path).exists() {
         let content = std::fs::read_to_string(file_path)?;
         let cfg: Config = serde_yaml::from_str(&content)?;
-        eprint!("Makanan enak {:?}", cfg);
         Ok(cfg)
     } else {
         Err("config file not found".into())

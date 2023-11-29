@@ -45,6 +45,7 @@ content %}
 </form>
 {% if is_can_delete -%}
 <form
+  id="form-delete"
   class="max-w-xs mx-auto"
   hx-target="#delete-response"
   hx-confirm="Are you sure to delete this book?"
@@ -53,13 +54,17 @@ content %}
   <hr class="h-px my-6 bg-gray-200 border-0" />
   <h2 class="text-base text-slate-600 mb-4 font-medium">Dangerous Action</h2>
   <input type="hidden" id="book_id" name="book_id" value="{{id}}" />
-  <button
-    type="submit"
-    class="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-900 text-white hover:bg-red-800 disabled:opacity-50 disabled:pointer-events-none"
-  >
-    Delete This Book
-  </button>
-  <p id="delete-response" class="text-xs text-red-600 mt-2"></p>
+  <div id="delete-button" class="block">
+    <button
+      type="submit"
+      class="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-900 text-white hover:bg-red-800 disabled:opacity-50 disabled:pointer-events-none"
+    >
+      Delete This Book
+    </button>
+  </div>
+  <p id="delete-response" class="hidden text-xs text-red-600 mt-2">
+    Cannot delete current book
+  </p>
 </form>
 {% else -%}
 <div></div>
@@ -68,6 +73,17 @@ content %}
   document.body.addEventListener("bookChangeSuccess", function (evt) {
     window.location.replace("/book");
   });
+  let currentCookieValue = document.cookie.replace(
+    /(?:(?:^|.*;\s*)book\s*=\s*([^;]*).*$)|^.*$/,
+    "$1"
+  );
+  let bookId = document.getElementById("id");
+  let deleteBtn = document.getElementById("delete-button");
+  let book = document.getElementById("delete-response");
+  if (currentCookieValue == bookId.value) {
+    deleteBtn.classList.replace("block", "hidden");
+    book.classList.replace("hidden", "block");
+  }
 </script>
 <!-- End Hero -->
 {% endblock %}

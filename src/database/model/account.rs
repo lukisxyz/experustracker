@@ -28,6 +28,12 @@ pub struct Account {
     pub email_verified_at: Option<DateTime<Utc>>,
 }
 
+pub struct AccountJson {
+    pub id: String,
+    pub email: String,
+    pub is_verified: bool,
+}
+
 impl Account {
     pub fn new(email: &str, password: &str) -> Self {
         let id = ulid::Ulid::new();
@@ -45,6 +51,20 @@ impl Account {
             deleted_at: None,
             email_verified_at: None,
         }
+    }
+
+    pub fn to_json(&self) -> AccountJson {
+        let acc = self.clone();
+        let is_verified = match acc.email_verified_at {
+            Some(_) => true,
+            None => false,
+        };
+
+        return AccountJson {
+            id: acc.id.to_string(),
+            email: acc.email,
+            is_verified,
+        };
     }
 
     fn hash_password(password: &[u8]) -> Result<String, Error> {

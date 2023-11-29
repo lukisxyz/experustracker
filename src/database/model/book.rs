@@ -19,6 +19,12 @@ pub struct Book {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
+pub struct BookJson {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+}
+
 impl Book {
     pub fn new(name: &str, desc: &str) -> Self {
         let id = ulid::Ulid::new();
@@ -31,6 +37,14 @@ impl Book {
             updated_at: None,
             deleted_at: None,
         }
+    }
+    pub fn to_json(&self) -> BookJson {
+        let book = self.clone();
+        return BookJson {
+            id: book.id.to_string(),
+            name: book.name,
+            description: book.description,
+        };
     }
 }
 

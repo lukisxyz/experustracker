@@ -1,26 +1,23 @@
-use std::convert::Infallible;
-
-use http_body_util::combinators::BoxBody;
-use hyper::body::{Bytes, Incoming};
-use hyper::header::LOCATION;
-use hyper::{Error, Method, Request, Response, StatusCode};
-use sqlx::PgPool;
-use ulid::Ulid;
-
-use crate::app::web::book::{
-    add_book_owner_page, add_new_book_page, book_lists_page, edit_book_page, get_book_by_id,
-};
+use crate::app::middlewares::params::id_params_middleware;
+use crate::app::middlewares::session::auth_middleware;
+use crate::app::web::book::{page_book_add_owner, page_book_create, page_book_edit, page_books};
 use crate::app::web::category::{
-    add_new_category_page, category_lists_page, edit_category_page, get_category_by_id,
+    edit_category_page, get_category_by_id, page_categories, page_category_create,
 };
 use crate::app::web::handler::{
-    dashboard_page, image, index_page, login_page, not_found_page, registration_page,
-    string_handler,
+    image, page_dashboard, page_index, page_not_found, page_signup, string_handler,
 };
 use crate::app::web::record::{
     add_new_record_page, edit_record_page, get_record_by_id, record_lists_page,
 };
 use crate::utils::serve_empty;
+use http_body_util::combinators::BoxBody;
+use hyper::body::{Bytes, Incoming};
+use hyper::header::LOCATION;
+use hyper::{Error, Method, Request, Response, StatusCode};
+use sqlx::PgPool;
+use std::convert::Infallible;
+use ulid::Ulid;
 
 pub async fn web_routes(
     method: &Method,
@@ -29,26 +26,38 @@ pub async fn web_routes(
     pool: PgPool,
 ) -> Result<Response<BoxBody<Bytes, Infallible>>, Error> {
     match (method, path) {
-        (&Method::GET, "/") | (&Method::GET, "/index.html") => index_page().await,
-        (&Method::GET, "/register") | (&Method::GET, "/register.html") => registration_page().await,
-        (&Method::GET, "/login") | (&Method::GET, "/login.html") => login_page().await,
-        (&Method::GET, "/book") => book_lists_page(req, pool).await,
-        (&Method::GET, "/book/create") => add_new_book_page(req, pool).await,
+        (&Method::GET, "/") | (&Method::GET, "/index.html") => page_index().await,
+        (&Method::GET, "/register") | (&Method::GET, "/register.html") => page_signup().await,
+        (&Method::GET, "/login") | (&Method::GET, "/login.html") => page_index().await,
+
+        // book routes
+        (&Method::GET, "/book") => auth_middleware(req, pool, page_books).await,
+        (&Method::GET, "/book/create") => auth_middleware(req, pool, page_book_create).await,
         (&Method::GET, path) if path.starts_with("/book/edit/") => {
-            let id_str = &path[11..];
-            let id = Ulid::from_string(id_str).unwrap();
-            if let Some(book) = get_book_by_id(id, pool.clone()).await {
-                edit_book_page(req, pool, book).await
-            } else {
-                Ok(Response::builder()
-                    .status(StatusCode::TEMPORARY_REDIRECT)
-                    .header(LOCATION, "/book")
-                    .body(serve_empty())
-                    .unwrap())
-            }
+            let p = path;
+            let run = move |req: Request<Incoming>, pool: PgPool, _: Ulid| async move {
+                id_params_middleware(
+                    req,
+                    pool,
+                    11,
+                    "/book".to_string(),
+                    p.to_owned(),
+                    page_book_edit,
+                )
+                .await
+            };
+
+            auth_middleware(req, pool, run).await
         }
-        (&Method::GET, "/category") => category_lists_page(req, pool).await,
-        (&Method::GET, "/category/create") => add_new_category_page(req, pool).await,
+        (&Method::GET, "/book/add-owner") | (&Method::GET, "/book/add-book-owner.html") => {
+            page_book_add_owner(req, pool).await
+        }
+
+        // category routes
+        (&Method::GET, "/category") => auth_middleware(req, pool, page_categories).await,
+        (&Method::GET, "/category/create") => {
+            auth_middleware(req, pool, page_category_create).await
+        }
         (&Method::GET, path) if path.starts_with("/category/edit/") => {
             let id_str = &path[15..];
             let id = Ulid::from_string(id_str).unwrap();
@@ -61,9 +70,6 @@ pub async fn web_routes(
                     .body(serve_empty())
                     .unwrap())
             }
-        }
-        (&Method::GET, "/book/add-owner") | (&Method::GET, "/book/add-book-owner.html") => {
-            add_book_owner_page(req, pool).await
         }
 
         (&Method::GET, "/record") => record_lists_page(req, pool).await,
@@ -82,7 +88,7 @@ pub async fn web_routes(
             }
         }
         (&Method::GET, "/dashboard") | (&Method::GET, "/dashboard.html") => {
-            dashboard_page(req, pool).await
+            page_dashboard(req, pool).await
         }
         (&Method::GET, "/main.css") => {
             string_handler(include_str!("../assets/main.css"), "text/css", None).await
@@ -102,10 +108,10 @@ pub async fn web_routes(
             if let Some(ext) = path_str.split('.').nth(1) {
                 match ext {
                     "ico" | "svg" => image(path).await,
-                    _ => not_found_page().await,
+                    _ => page_not_found().await,
                 }
             } else {
-                not_found_page().await
+                page_not_found().await
             }
         }
         _ => {

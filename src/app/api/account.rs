@@ -91,7 +91,6 @@ pub async fn validate_password(req: Request<Incoming>) -> HandlerResult {
             .unwrap());
     };
 
-    // TODO: JUST FOR SIMPLE CASE, CHANGE THIS
     if !is_password_valid(&password) {
         return Ok(Response::builder()
             .status(StatusCode::UNPROCESSABLE_ENTITY)
@@ -105,7 +104,7 @@ pub async fn validate_password(req: Request<Incoming>) -> HandlerResult {
         .unwrap())
 }
 
-pub async fn create_new_account(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
+pub async fn create_account(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
     let body = req.collect().await?.to_bytes();
     let params = form_urlencoded::parse(body.as_ref())
         .into_owned()

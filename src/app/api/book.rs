@@ -80,7 +80,7 @@ pub async fn create_book(req: Request<Incoming>, pool: PgPool, account_id: Ulid)
     }
 }
 
-pub async fn add_book_owner(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
+pub async fn add_book_owner(req: Request<Incoming>, pool: PgPool, _: Ulid) -> HandlerResult {
     let book_id: Ulid;
     {
         let header = req.headers();

@@ -27,21 +27,10 @@ pub async fn api_routes(
         (&Method::POST, "/api/register/validate-password") => validate_password(req).await,
         (&Method::POST, "/api/book") => auth_middleware(req, pool, create_book).await,
         (&Method::PATCH, "/api/book") => auth_middleware(req, pool, edit_book).await,
+        (&Method::DELETE, "/api/book") => auth_middleware(req, pool, delete_book).await,
+        (&Method::POST, "/api/book/add-owner") => auth_middleware(req, pool, add_book_owner).await,
 
-        //TODO
-        (&Method::DELETE, "/api/book") => {
-            if let Some(account_id) = get_session_account_id(&req, &pool).await {
-                delete_book(req, pool, account_id).await
-            } else {
-                Ok(Response::builder()
-                    .status(StatusCode::TEMPORARY_REDIRECT)
-                    .header(LOCATION, "/login")
-                    .body(serve_empty())
-                    .unwrap())
-            }
-        }
-        (&Method::POST, "/api/book/add-owner") => add_book_owner(req, pool).await,
-        (&Method::POST, "/api/category") => create_category(req, pool).await,
+        (&Method::POST, "/api/category") => auth_middleware(req, pool, create_category).await,
         (&Method::DELETE, "/api/category") => {
             if let Some(_) = get_session_account_id(&req, &pool).await {
                 delete_category(req, pool).await
@@ -53,7 +42,7 @@ pub async fn api_routes(
                     .unwrap())
             }
         }
-        (&Method::PATCH, "/api/category") => edit_category(req, pool).await,
+        (&Method::PATCH, "/api/category") => auth_middleware(req, pool, edit_category).await,
         (&Method::POST, "/api/record") => create_record(req, pool).await,
         (&Method::PATCH, "/api/record") => edit_record(req, pool).await,
         (&Method::DELETE, "/api/record") => delete_record(req, pool).await,

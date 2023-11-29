@@ -95,7 +95,7 @@ pub async fn get_by_book_id(id: Ulid, pool: PgPool) -> Vec<Category> {
                 let b = Category::from_row(&category).unwrap();
                 datas.push(b)
             }
-            return datas;
+            datas
         }
         Err(_) => todo!(),
     }

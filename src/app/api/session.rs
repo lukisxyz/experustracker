@@ -32,7 +32,7 @@ pub async fn login_account(req: Request<Incoming>, pool: PgPool) -> HandlerResul
             .unwrap());
     };
 
-    if !EmailAddress::is_valid(&email) {
+    if !EmailAddress::is_valid(email) {
         return Ok(Response::builder()
             .status(StatusCode::UNPROCESSABLE_ENTITY)
             .body(serve_full(EMAIL_WRONG_FORMAT))
@@ -119,14 +119,14 @@ pub async fn login_account(req: Request<Incoming>, pool: PgPool) -> HandlerResul
                 VALUES
                     ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *;",
             )
-            .bind(&session.session_id.to_bytes())
-            .bind(&session.user_id.to_bytes())
+            .bind(session.session_id.to_bytes())
+            .bind(session.user_id.to_bytes())
             .bind(&session.token)
-            .bind(&session.issued_at)
-            .bind(&session.expire_at)
+            .bind(session.issued_at)
+            .bind(session.expire_at)
             .bind(&session.ip_address)
             .bind(&session.user_agent)
-            .bind(&session.status)
+            .bind(session.status)
             .fetch_one(&pool)
             .await
             {
@@ -145,10 +145,10 @@ pub async fn login_account(req: Request<Incoming>, pool: PgPool) -> HandlerResul
                         .unwrap())
                 }
                 Err(err) => {
-                    return Ok(Response::builder()
+                    Ok(Response::builder()
                         .status(StatusCode::UNPROCESSABLE_ENTITY)
                         .body(serve_full(err.to_string()))
-                        .unwrap());
+                        .unwrap())
                 }
             }
         }
@@ -200,10 +200,10 @@ pub async fn logout_account(req: Request<Incoming>, pool: PgPool) -> HandlerResu
                             .body(serve_full(err.to_string()))
                             .unwrap());
                     }
-                    return Ok(Response::builder()
+                    Ok(Response::builder()
                         .status(StatusCode::UNPROCESSABLE_ENTITY)
                         .body(serve_full(err.to_string()))
-                        .unwrap());
+                        .unwrap())
                 }
             }
         }

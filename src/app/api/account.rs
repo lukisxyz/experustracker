@@ -28,7 +28,7 @@ fn is_password_valid(s: &str) -> bool {
         has_whitespace |= c.is_whitespace();
         has_lower |= c.is_lowercase();
         has_upper |= c.is_uppercase();
-        has_digit |= c.is_digit(10);
+        has_digit |= c.is_ascii_digit();
     }
 
     !has_whitespace && has_upper && has_lower && has_digit && s.len() >= 8
@@ -48,7 +48,7 @@ pub async fn validate_email(req: Request<Incoming>, pool: PgPool) -> HandlerResu
             .unwrap());
     };
 
-    if !EmailAddress::is_valid(&email) {
+    if !EmailAddress::is_valid(email) {
         return Ok(Response::builder()
             .status(StatusCode::UNPROCESSABLE_ENTITY)
             .body(serve_full(EMAIL_WRONG_FORMAT))
@@ -96,7 +96,7 @@ pub async fn validate_password(req: Request<Incoming>) -> HandlerResult {
             .unwrap());
     };
 
-    if !is_password_valid(&password) {
+    if !is_password_valid(password) {
         return Ok(Response::builder()
             .status(StatusCode::UNPROCESSABLE_ENTITY)
             .body(serve_full(PASSWORD_WRONG_FORMAT))
@@ -123,7 +123,7 @@ pub async fn create_account(req: Request<Incoming>, pool: PgPool) -> HandlerResu
             .unwrap());
     };
 
-    if !EmailAddress::is_valid(&email) {
+    if !EmailAddress::is_valid(email) {
         return Ok(Response::builder()
             .status(StatusCode::UNPROCESSABLE_ENTITY)
             .body(serve_full(EMAIL_WRONG_FORMAT))
@@ -139,7 +139,7 @@ pub async fn create_account(req: Request<Incoming>, pool: PgPool) -> HandlerResu
             .unwrap());
     };
 
-    if !is_password_valid(&password) {
+    if !is_password_valid(password) {
         return Ok(Response::builder()
             .status(StatusCode::UNPROCESSABLE_ENTITY)
             .body(serve_full(PASSWORD_WRONG_FORMAT))
@@ -147,7 +147,7 @@ pub async fn create_account(req: Request<Incoming>, pool: PgPool) -> HandlerResu
     }
 
     let mut tx = pool.begin().await.unwrap();
-    let new_account = Account::new(&email, password);
+    let new_account = Account::new(email, password);
     match sqlx::query(
         "INSERT INTO accounts (id, email, password, code_verification) VALUES ($1, $2, $3, $4)",
     )
@@ -160,7 +160,7 @@ pub async fn create_account(req: Request<Incoming>, pool: PgPool) -> HandlerResu
     {
         Ok(_) => {
             let new_book = Book::new("Main", "Main book");
-            let id = new_book.id.clone();
+            let id = new_book.id;
             match sqlx::query(
                 "INSERT INTO books (id, name, description) VALUES ($1, $2, $3) RETURNING *;",
             )
@@ -173,8 +173,8 @@ pub async fn create_account(req: Request<Incoming>, pool: PgPool) -> HandlerResu
                 Ok(_) => {
                     match sqlx::query(
                         "INSERT INTO account_books (account_id, book_id) VALUES ($1, $2) ON CONFLICT (account_id, book_id) DO NOTHING"
-                    ).bind(&new_account.id.to_bytes())
-                    .bind(&new_book.id.to_bytes())
+                    ).bind(new_account.id.to_bytes())
+                    .bind(new_book.id.to_bytes())
                     .execute(&mut *tx)
                     .await {
                         Ok(_) => {
@@ -215,28 +215,28 @@ pub async fn create_account(req: Request<Incoming>, pool: PgPool) -> HandlerResu
                             },
                         Err(err) => {
                             let _ = tx.rollback().await;
-                            return Ok(Response::builder()
+                            Ok(Response::builder()
                                 .status(StatusCode::UNPROCESSABLE_ENTITY)
                                 .body(serve_full(err.to_string()))
-                                .unwrap());
+                                .unwrap())
                         },
                     }
                 }
                 Err(err) => {
                     let _ = tx.rollback().await;
-                    return Ok(Response::builder()
+                    Ok(Response::builder()
                         .status(StatusCode::UNPROCESSABLE_ENTITY)
                         .body(serve_full(err.to_string()))
-                        .unwrap());
+                        .unwrap())
                 }
             }
         }
         Err(err) => {
             let _ = tx.rollback().await;
-            return Ok(Response::builder()
+            Ok(Response::builder()
                 .status(StatusCode::UNPROCESSABLE_ENTITY)
                 .body(serve_full(err.to_string()))
-                .unwrap());
+                .unwrap())
         }
     }
 }

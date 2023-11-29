@@ -35,7 +35,7 @@ pub async fn get_by_account_id(id: Ulid, pool: PgPool) -> Vec<Book> {
                 let b = Book::from_row(&book).unwrap();
                 datas.push(b)
             }
-            return datas;
+            datas
         }
         Err(_) => [].to_vec(),
     }
@@ -163,8 +163,8 @@ pub async fn add_owner_by_email(
             for record in datas {
                 sqlx::query(
                             "INSERT INTO account_books (account_id, book_id) VALUES ($1, $2) ON CONFLICT (account_id, book_id) DO NOTHING"
-                        ).bind(&record.account_id.to_bytes())
-                        .bind(&record.book_id.to_bytes())
+                        ).bind(record.account_id.to_bytes())
+                        .bind(record.book_id.to_bytes())
                         .execute(&mut *tx)
                         .await.unwrap();
             }

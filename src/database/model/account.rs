@@ -39,7 +39,7 @@ impl Account {
         let id = ulid::Ulid::new();
         let created_at = chrono::offset::Utc::now();
         let code_verification = utils::generate_random_string(21);
-        let hashed_password = Self::hash_password(&password.as_bytes()).unwrap();
+        let hashed_password = Self::hash_password(password.as_bytes()).unwrap();
         let secret_hashed_password = Secret::from(hashed_password);
         Self {
             id,
@@ -55,16 +55,13 @@ impl Account {
 
     pub fn to_json(&self) -> AccountJson {
         let acc = self.clone();
-        let is_verified = match acc.email_verified_at {
-            Some(_) => true,
-            None => false,
-        };
+        let is_verified = acc.email_verified_at.is_some();
 
-        return AccountJson {
+        AccountJson {
             id: acc.id.to_string(),
             email: acc.email,
             is_verified,
-        };
+        }
     }
 
     fn hash_password(password: &[u8]) -> Result<String, Error> {
@@ -78,7 +75,7 @@ impl Account {
     }
 
     pub fn compare_password(&self, password: &[u8]) -> Result<bool, Error> {
-        argon2::verify_encoded(&self.password.expose_secret(), password)
+        argon2::verify_encoded(self.password.expose_secret(), password)
     }
 }
 

@@ -71,7 +71,7 @@ impl PgConfig {
             "postgresql://{}:{}@{}:{}/{}?sslmode={}",
             self.username, self.password, self.host, self.port, self.db_name, self.ssl_mode
         );
-        return db_conn_string;
+        db_conn_string
     }
     fn load_from_env(&mut self) {
         if let Some(host) = load_env_str("DB_HOST") {

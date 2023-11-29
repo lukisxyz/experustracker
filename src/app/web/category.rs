@@ -16,27 +16,27 @@ pub async fn page_category_create(req: Request<Incoming>, _: PgPool, _: Ulid) ->
     let book_id: Ulid;
     {
         let header = req.headers();
-        let id = get_book_default_id(&header);
+        let id = get_book_default_id(header);
         book_id = id.await.unwrap();
     }
     let template = AddNewCategoryTemplate {
         id: book_id.to_string(),
     };
     let html = template.render().expect("Should render markup");
-    return html_str_handler(&html).await;
+    html_str_handler(&html).await
 }
 
 pub async fn page_categories(req: Request<Incoming>, pool: PgPool, _: Ulid) -> HandlerResult {
     let book_id: Ulid;
     {
         let header = req.headers();
-        let id = get_book_default_id(&header);
+        let id = get_book_default_id(header);
         book_id = id.await.unwrap();
     }
     let datas = get_by_book_id(book_id, pool).await;
     let template = CategoryListsTemplate { categories: &datas };
     let html = template.render().expect("Should render markup");
-    return html_str_handler(&html).await;
+    html_str_handler(&html).await
 }
 
 pub async fn page_category_edit(_: Request<Incoming>, pool: PgPool, id: Ulid) -> HandlerResult {
@@ -47,7 +47,7 @@ pub async fn page_category_edit(_: Request<Incoming>, pool: PgPool, id: Ulid) ->
             description: category.description,
         };
         let html = template.render().expect("Should render markup");
-        return html_str_handler(&html).await;
+        html_str_handler(&html).await
     } else {
         Ok(Response::builder()
             .status(StatusCode::TEMPORARY_REDIRECT)

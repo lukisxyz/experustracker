@@ -52,7 +52,7 @@ pub async fn create_record(req: Request<Incoming>, pool: PgPool, _: Ulid) -> Han
             .body(serve_empty())
             .unwrap());
     };
-    let book_id = Ulid::from_string(&book).unwrap().to_bytes();
+    let book_id = Ulid::from_string(book).unwrap().to_bytes();
 
     let category_id_str = if let Some(e) = params.get("category") {
         e
@@ -62,9 +62,9 @@ pub async fn create_record(req: Request<Incoming>, pool: PgPool, _: Ulid) -> Han
             .body(serve_full(CAT_MISSING))
             .unwrap());
     };
-    let category_id = Ulid::from_string(&category_id_str).unwrap().to_bytes();
+    let category_id = Ulid::from_string(category_id_str).unwrap().to_bytes();
     let new_record = Record::new(
-        &notes,
+        notes,
         amount,
         Ulid::from_bytes(book_id),
         Ulid::from_bytes(category_id),
@@ -118,7 +118,7 @@ pub async fn edit_record(req: Request<Incoming>, pool: PgPool, _: Ulid) -> Handl
             .body(serve_empty())
             .unwrap());
     };
-    let record_id = Ulid::from_string(&record).unwrap().to_bytes();
+    let record_id = Ulid::from_string(record).unwrap().to_bytes();
     let category_id_str = if let Some(e) = params.get("category") {
         e
     } else {
@@ -127,7 +127,7 @@ pub async fn edit_record(req: Request<Incoming>, pool: PgPool, _: Ulid) -> Handl
             .body(serve_full(CAT_MISSING))
             .unwrap());
     };
-    let category_id = Ulid::from_string(&category_id_str).unwrap().to_bytes();
+    let category_id = Ulid::from_string(category_id_str).unwrap().to_bytes();
     match edit(
         &pool,
         notes.to_string(),
@@ -162,7 +162,7 @@ pub async fn delete_record(req: Request<Incoming>, pool: PgPool, _: Ulid) -> Han
             .body(serve_empty())
             .unwrap());
     };
-    let record_id = Ulid::from_string(&record).unwrap().to_bytes();
+    let record_id = Ulid::from_string(record).unwrap().to_bytes();
     match delete(&pool, record_id.into()).await {
         Ok(_) => Ok(Response::builder()
             .status(StatusCode::OK)
@@ -170,10 +170,10 @@ pub async fn delete_record(req: Request<Incoming>, pool: PgPool, _: Ulid) -> Han
             .body(serve_full("Success delete a record"))
             .unwrap()),
         Err(err) => {
-            return Ok(Response::builder()
+            Ok(Response::builder()
                 .status(StatusCode::UNPROCESSABLE_ENTITY)
                 .body(serve_full(err.to_string()))
-                .unwrap());
+                .unwrap())
         }
     }
 }

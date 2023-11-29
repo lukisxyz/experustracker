@@ -20,21 +20,21 @@ pub async fn page_book_create(_: Request<Incoming>, pool: PgPool, id: Ulid) -> H
             is_first_time: true,
         };
         let html = template.render().expect("Should render markup");
-        return html_str_handler(&html).await;
+        html_str_handler(&html).await
     } else {
         let template = AddNewBookTemplate {
             is_first_time: false,
         };
         let html = template.render().expect("Should render markup");
-        return html_str_handler(&html).await;
+        html_str_handler(&html).await
     }
 }
 
 pub async fn page_book_add_owner(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
-    if let Some(_) = middleware_auth(&req, &pool).await {
+    if middleware_auth(&req, &pool).await.is_some() {
         let template = AddBookOwnerTemplate::default();
         let html = template.render().expect("Should render markup");
-        return html_str_handler(&html).await;
+        html_str_handler(&html).await
     } else {
         Ok(Response::builder()
             .status(StatusCode::TEMPORARY_REDIRECT)
@@ -48,7 +48,7 @@ pub async fn page_books(_: Request<Incoming>, pool: PgPool, id: Ulid) -> Handler
     let datas = get_by_account_id(id, pool).await;
     let template = BookListsBookTemplate { books: &datas };
     let html = template.render().expect("Should render markup");
-    return html_str_handler(&html).await;
+    html_str_handler(&html).await
 }
 
 pub async fn page_book_edit(_: Request<Incoming>, pool: PgPool, id: Ulid) -> HandlerResult {
@@ -65,7 +65,7 @@ pub async fn page_book_edit(_: Request<Incoming>, pool: PgPool, id: Ulid) -> Han
                 is_can_delete: can_delete,
             };
             let html = template.render().expect("Should render markup");
-            return html_str_handler(&html).await;
+            html_str_handler(&html).await
         }
         None => Ok(Response::builder()
             .status(StatusCode::SEE_OTHER)

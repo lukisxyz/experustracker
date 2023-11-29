@@ -50,7 +50,7 @@ pub async fn html_str_handler(body: &str) -> HandlerResult {
 
 pub async fn image(path_str: &str) -> HandlerResult {
     let path_buf = PathBuf::from(path_str);
-    let file_name = path_buf.file_name().unwrap().to_str().unwrap();
+    let _file_name = path_buf.file_name().unwrap().to_str().unwrap();
     if let Some(ext) = path_buf.extension() {
         match ext.to_str().unwrap() {
             "ico" => {
@@ -62,10 +62,7 @@ pub async fn image(path_str: &str) -> HandlerResult {
             }
             "svg" => {
                 // build the response
-                let xml = match file_name {
-                    // "dev-badge.svg" => include_str!("assets/svg/dev-badge.svg"), // for example
-                    _ => "",
-                };
+                let xml = "";
                 string_handler(xml, "image/svg+xml", None).await
             }
             _ => page_not_found().await,
@@ -110,7 +107,7 @@ pub async fn page_dashboard(req: Request<Incoming>, pool: PgPool) -> HandlerResu
         } else {
             let template = DashboardTemplate::default();
             let html = template.render().expect("Should render markup");
-            return html_str_handler(&html).await;
+            html_str_handler(&html).await
         }
     } else {
         Ok(Response::builder()

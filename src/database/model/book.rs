@@ -40,11 +40,11 @@ impl Book {
     }
     pub fn to_json(&self) -> BookJson {
         let book = self.clone();
-        return BookJson {
+        BookJson {
             id: book.id.to_string(),
             name: book.name,
             description: book.description,
-        };
+        }
     }
 }
 

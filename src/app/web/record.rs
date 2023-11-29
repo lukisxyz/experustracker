@@ -20,7 +20,7 @@ pub async fn page_records(req: Request<Incoming>, pool: PgPool, _: Ulid) -> Hand
     let book_id: Ulid;
     {
         let header = req.headers();
-        let id = get_book_default_id(&header);
+        let id = get_book_default_id(header);
         book_id = id.await.unwrap();
     }
     let datas = fetch(book_id, "", 10, pool).await;
@@ -37,14 +37,14 @@ pub async fn page_records(req: Request<Incoming>, pool: PgPool, _: Ulid) -> Hand
         records: &datas_with_rupiah,
     };
     let html = template.render().expect("Should render markup");
-    return html_str_handler(&html).await;
+    html_str_handler(&html).await
 }
 
 pub async fn page_record_create(req: Request<Incoming>, pool: PgPool, _: Ulid) -> HandlerResult {
     let book_id: Ulid;
     {
         let header = req.headers();
-        let id = get_book_default_id(&header);
+        let id = get_book_default_id(header);
         book_id = id.await.unwrap();
     }
     let cats = get_by_book_id(book_id, pool).await;
@@ -53,14 +53,14 @@ pub async fn page_record_create(req: Request<Incoming>, pool: PgPool, _: Ulid) -
         categories: &cats,
     };
     let html = template.render().expect("Should render markup");
-    return html_str_handler(&html).await;
+    html_str_handler(&html).await
 }
 
 pub async fn page_record_edit(req: Request<Incoming>, pool: PgPool, id: Ulid) -> HandlerResult {
     let book_id: Ulid;
     {
         let header = req.headers();
-        let id = get_book_default_id(&header);
+        let id = get_book_default_id(header);
         book_id = id.await.unwrap();
     }
     let pool2 = pool.clone();
@@ -74,7 +74,7 @@ pub async fn page_record_edit(req: Request<Incoming>, pool: PgPool, id: Ulid) ->
             categories: &cats,
         };
         let html = template.render().expect("Should render markup");
-        return html_str_handler(&html).await;
+        html_str_handler(&html).await
     } else {
         Ok(Response::builder()
             .status(StatusCode::TEMPORARY_REDIRECT)

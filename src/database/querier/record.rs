@@ -93,7 +93,7 @@ pub async fn fetch(book_id: Ulid, cursor: &str, count: i32, pool: PgPool) -> Vec
                 let b = Record::from_row(&record).unwrap();
                 datas.push(b)
             }
-            return datas;
+            datas
         }
         Err(_) => [].to_vec(),
     }

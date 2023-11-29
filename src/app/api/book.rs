@@ -49,7 +49,7 @@ pub async fn create_book(req: Request<Incoming>, pool: PgPool, account_id: Ulid)
             .body(serve_full(NAME_MISSING))
             .unwrap());
     };
-    let new_book = Book::new(&name, &description);
+    let new_book = Book::new(name, description);
     let new_book_id = new_book.clone().id;
     match save(&pool, account_id, new_book).await {
         Ok(_) => {
@@ -57,25 +57,25 @@ pub async fn create_book(req: Request<Incoming>, pool: PgPool, account_id: Ulid)
                 let mut c = Cookie::new("book", new_book_id.to_string());
                 c.set_max_age(Duration::days(30 * 12));
                 c.set_path("/");
-                return Ok(Response::builder()
+                Ok(Response::builder()
                     .status(StatusCode::CREATED)
                     .header("HX-Trigger", "createbookSuccess")
                     .header(SET_COOKIE, c.to_string())
                     .body(serve_full("Success create a book"))
-                    .unwrap());
+                    .unwrap())
             } else {
-                return Ok(Response::builder()
+                Ok(Response::builder()
                     .status(StatusCode::CREATED)
                     .header("HX-Trigger", "createbookSuccess")
                     .body(serve_full("Success create a book"))
-                    .unwrap());
+                    .unwrap())
             }
         }
         Err(err) => {
-            return Ok(Response::builder()
+            Ok(Response::builder()
                 .status(StatusCode::UNPROCESSABLE_ENTITY)
                 .body(serve_full(err.to_string()))
-                .unwrap());
+                .unwrap())
         }
     }
 }
@@ -84,7 +84,7 @@ pub async fn add_book_owner(req: Request<Incoming>, pool: PgPool, _: Ulid) -> Ha
     let book_id: Ulid;
     {
         let header = req.headers();
-        let id = get_book_default_id(&header);
+        let id = get_book_default_id(header);
         book_id = id.await.unwrap();
     }
     let body = req.collect().await?.to_bytes();
@@ -146,7 +146,7 @@ pub async fn edit_book(req: Request<Incoming>, pool: PgPool, _: Ulid) -> Handler
         &pool,
         name.to_string(),
         description.to_string(),
-        Ulid::from_string(&id).unwrap(),
+        Ulid::from_string(id).unwrap(),
     )
     .await
     {
@@ -175,7 +175,7 @@ pub async fn delete_book(req: Request<Incoming>, pool: PgPool, account_id: Ulid)
             .body(serve_empty())
             .unwrap());
     };
-    let book_id = Ulid::from_string(&book).unwrap().to_bytes();
+    let book_id = Ulid::from_string(book).unwrap().to_bytes();
     match delete(&pool, book_id.into(), account_id).await {
         Ok(_) => Ok(Response::builder()
             .status(StatusCode::OK)

@@ -46,7 +46,7 @@ pub async fn create_category(req: Request<Incoming>, pool: PgPool, _: Ulid) -> H
             .body(serve_empty())
             .unwrap());
     };
-    let book_id = Ulid::from_string(&book).unwrap().to_bytes();
+    let book_id = Ulid::from_string(book).unwrap().to_bytes();
     let category_type = if let Some(e) = params.get("type") {
         e
     } else {
@@ -56,20 +56,20 @@ pub async fn create_category(req: Request<Incoming>, pool: PgPool, _: Ulid) -> H
             .unwrap());
     };
     let is_expense: bool = category_type == "expense";
-    let new_category = Category::new(&name, &description, is_expense, Ulid::from_bytes(book_id));
+    let new_category = Category::new(name, description, is_expense, Ulid::from_bytes(book_id));
     match save(&pool, new_category).await {
         Ok(_) => {
-            return Ok(Response::builder()
+            Ok(Response::builder()
                 .status(StatusCode::CREATED)
                 .header("HX-Trigger", "createcategorySuccess")
                 .body(serve_full("Success create a category"))
-                .unwrap());
+                .unwrap())
         }
         Err(err) => {
-            return Ok(Response::builder()
+            Ok(Response::builder()
                 .status(StatusCode::UNPROCESSABLE_ENTITY)
                 .body(serve_full(err.to_string()))
-                .unwrap());
+                .unwrap())
         }
     }
 }
@@ -107,7 +107,7 @@ pub async fn edit_category(req: Request<Incoming>, pool: PgPool, _: Ulid) -> Han
         &pool,
         name.to_string(),
         description.to_string(),
-        Ulid::from_string(&category_id_str).unwrap(),
+        Ulid::from_string(category_id_str).unwrap(),
     )
     .await
     {
@@ -136,7 +136,7 @@ pub async fn delete_category(req: Request<Incoming>, pool: PgPool, _: Ulid) -> H
             .body(serve_empty())
             .unwrap());
     };
-    let category_id = Ulid::from_string(&category).unwrap();
+    let category_id = Ulid::from_string(category).unwrap();
     match delete(&pool, category_id).await {
         Ok(_) => Ok(Response::builder()
             .status(StatusCode::OK)
@@ -144,10 +144,10 @@ pub async fn delete_category(req: Request<Incoming>, pool: PgPool, _: Ulid) -> H
             .body(serve_full("Success delete a category"))
             .unwrap()),
         Err(err) => {
-            return Ok(Response::builder()
+            Ok(Response::builder()
                 .status(StatusCode::UNPROCESSABLE_ENTITY)
                 .body(serve_full(err.to_string()))
-                .unwrap());
+                .unwrap())
         }
     }
 }

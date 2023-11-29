@@ -1,5 +1,5 @@
 use crate::{
-    app::web::handler::HandlerResult, database::model::session::Session, utils::serve_empty,
+    app::web::common::HandlerResult, database::model::session::Session, utils::serve_empty,
 };
 use cookie::Cookie;
 use hyper::{

@@ -6,7 +6,7 @@ use sqlx::PgPool;
 use ulid::Ulid;
 
 use crate::{
-    app::web::handler::HandlerResult,
+    app::web::common::HandlerResult,
     database::{
         model::category::Category,
         querier::category::{delete, edit, save},
@@ -123,7 +123,7 @@ pub async fn edit_category(req: Request<Incoming>, pool: PgPool, _: Ulid) -> Han
     }
 }
 
-pub async fn delete_category(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
+pub async fn delete_category(req: Request<Incoming>, pool: PgPool, _: Ulid) -> HandlerResult {
     let body = req.collect().await?.to_bytes();
     let params = form_urlencoded::parse(body.as_ref())
         .into_owned()

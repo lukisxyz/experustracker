@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use ulid::Ulid;
 
 use crate::{
-    app::web::handler::HandlerResult,
+    app::web::common::HandlerResult,
     database::model::record::Record,
     utils::{serve_empty, serve_full},
 };

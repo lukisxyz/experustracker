@@ -1,4 +1,4 @@
-use crate::{app::web::handler::HandlerResult, utils::serve_empty};
+use crate::{app::web::common::HandlerResult, utils::serve_empty};
 use hyper::{body::Incoming, header::LOCATION, Request, Response, StatusCode};
 use sqlx::PgPool;
 use std::future::Future;

@@ -1,4 +1,4 @@
-use crate::app::web::handler::HandlerResult;
+use crate::app::web::common::HandlerResult;
 use crate::database::model::account::Account;
 use crate::utils::serve_full;
 use email_address::EmailAddress;

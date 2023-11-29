@@ -1,10 +1,8 @@
 use crate::app::middlewares::params::id_params_middleware;
 use crate::app::middlewares::session::auth_middleware;
 use crate::app::web::book::{page_book_add_owner, page_book_create, page_book_edit, page_books};
-use crate::app::web::category::{
-    edit_category_page, get_category_by_id, page_categories, page_category_create,
-};
-use crate::app::web::handler::{
+use crate::app::web::category::{page_categories, page_category_create, page_category_edit};
+use crate::app::web::common::{
     image, page_dashboard, page_index, page_not_found, page_signup, string_handler,
 };
 use crate::app::web::record::{
@@ -59,17 +57,20 @@ pub async fn web_routes(
             auth_middleware(req, pool, page_category_create).await
         }
         (&Method::GET, path) if path.starts_with("/category/edit/") => {
-            let id_str = &path[15..];
-            let id = Ulid::from_string(id_str).unwrap();
-            if let Some(category) = get_category_by_id(id, pool.clone()).await {
-                edit_category_page(req, pool, category).await
-            } else {
-                Ok(Response::builder()
-                    .status(StatusCode::TEMPORARY_REDIRECT)
-                    .header(LOCATION, "/book")
-                    .body(serve_empty())
-                    .unwrap())
-            }
+            let p = path;
+            let run = move |req: Request<Incoming>, pool: PgPool, _: Ulid| async move {
+                id_params_middleware(
+                    req,
+                    pool,
+                    15,
+                    "/category".to_string(),
+                    p.to_owned(),
+                    page_category_edit,
+                )
+                .await
+            };
+
+            auth_middleware(req, pool, run).await
         }
 
         (&Method::GET, "/record") => record_lists_page(req, pool).await,

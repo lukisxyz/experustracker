@@ -1,5 +1,5 @@
 use crate::database::model::category::Category;
-use sqlx::PgPool;
+use sqlx::{FromRow, PgPool};
 use sqlx_core::error::BoxDynError;
 use ulid::Ulid;
 
@@ -74,5 +74,48 @@ pub async fn delete(pool: &PgPool, category_id: Ulid) -> Result<(), BoxDynError>
             tx.rollback().await.unwrap();
             Err(Box::new(err))
         }
+    }
+}
+
+pub async fn get_by_book_id(id: Ulid, pool: PgPool) -> Vec<Category> {
+    match sqlx::query(
+        "SELECT *
+            FROM categories
+            WHERE book_id = $1 AND deleted_at IS NULL
+            ORDER BY id DESC;
+        ",
+    )
+    .bind(id.to_bytes())
+    .fetch_all(&pool)
+    .await
+    {
+        Ok(v) => {
+            let mut datas: Vec<Category> = Vec::new();
+            for category in v {
+                let b = Category::from_row(&category).unwrap();
+                datas.push(b)
+            }
+            return datas;
+        }
+        Err(_) => todo!(),
+    }
+}
+
+pub async fn get_by_id(id: Ulid, pool: PgPool) -> Option<Category> {
+    match sqlx::query(
+        "SELECT *
+            FROM categories
+            WHERE id = $1 AND deleted_at IS NULL;
+        ",
+    )
+    .bind(id.to_bytes())
+    .fetch_one(&pool)
+    .await
+    {
+        Ok(v) => {
+            let cat = Category::from_row(&v).unwrap();
+            Some(cat)
+        }
+        Err(_) => None,
     }
 }

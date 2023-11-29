@@ -1,6 +1,6 @@
 use super::get_book_default_id;
 use crate::{
-    app::web::handler::HandlerResult,
+    app::web::common::HandlerResult,
     database::{
         model::book::Book,
         querier::book::{add_owner_by_email, delete, edit, save},

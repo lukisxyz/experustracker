@@ -1,4 +1,4 @@
-use super::handler::{html_str_handler, HandlerResult};
+use super::common::{html_str_handler, HandlerResult};
 use crate::{
     app::web::{
         middleware_auth,

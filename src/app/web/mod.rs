@@ -1,14 +1,12 @@
+use crate::database::model::session::Session;
 use cookie::Cookie;
 use hyper::{body::Incoming, header::COOKIE, Request};
 use sqlx::{FromRow, PgPool};
 use ulid::Ulid;
-
-use crate::database::model::session::Session;
 pub mod book;
 pub mod category;
+pub mod common;
 pub mod record;
-
-pub mod handler;
 pub mod templates;
 
 pub async fn middleware_auth(req: &Request<Incoming>, pool: &PgPool) -> Option<Ulid> {

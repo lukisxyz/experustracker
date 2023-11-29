@@ -1,21 +1,21 @@
-use sqlx::{FromRow, PgPool};
-use ulid::Ulid;
-
-use crate::{app::api::get_book_default_id, database::model::record::Record, utils::format_rupiah};
-use askama::Template;
-use hyper::{body::Incoming, header::LOCATION, Request, Response, StatusCode};
-
+use super::{
+    common::{html_str_handler, HandlerResult},
+    middleware_auth,
+    templates::{AddRecordTemplate, EditRecordTemplate, RecordWithRupiah},
+};
+use crate::{
+    app::api::get_book_default_id,
+    database::{model::record::Record, querier::category::get_by_book_id},
+    utils::format_rupiah,
+};
 use crate::{
     app::{api::get_session_account_id, web::templates::RecordListsTemplate},
     utils::serve_empty,
 };
-
-use super::{
-    category::get_category_by_book_id,
-    handler::{html_str_handler, HandlerResult},
-    middleware_auth,
-    templates::{AddRecordTemplate, EditRecordTemplate, RecordWithRupiah},
-};
+use askama::Template;
+use hyper::{body::Incoming, header::LOCATION, Request, Response, StatusCode};
+use sqlx::{FromRow, PgPool};
+use ulid::Ulid;
 
 pub async fn record_lists_page(req: Request<Incoming>, pool: PgPool) -> HandlerResult {
     if let Some(_) = get_session_account_id(&req, &pool).await {
@@ -95,7 +95,7 @@ pub async fn add_new_record_page(req: Request<Incoming>, pool: PgPool) -> Handle
             let id = get_book_default_id(&header);
             book_id = id.await.unwrap();
         }
-        let cats = get_category_by_book_id(book_id, pool).await;
+        let cats = get_by_book_id(book_id, pool).await;
         let template = AddRecordTemplate {
             id: book_id.to_string(),
             categories: &cats,
@@ -143,7 +143,7 @@ pub async fn edit_record_page(
             let id = get_book_default_id(&header);
             book_id = id.await.unwrap();
         }
-        let cats = get_category_by_book_id(book_id, pool).await;
+        let cats = get_by_book_id(book_id, pool).await;
         let template = EditRecordTemplate {
             id: record.id.to_string(),
             notes: record.notes,

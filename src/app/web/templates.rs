@@ -1,4 +1,5 @@
 use askama::Template;
+use ulid::Ulid;
 
 use crate::database::model::{book::Book, category::Category, record::Record};
 
@@ -91,7 +92,7 @@ pub struct AddRecordTemplate<'a> {
 pub struct EditRecordTemplate<'a> {
     pub id: String,
     pub notes: String,
-    pub category_id: String,
+    pub category_id: Ulid,
     pub amount: f32,
     pub categories: &'a [Category],
 }

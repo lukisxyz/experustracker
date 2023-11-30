@@ -70,7 +70,7 @@ pub async fn page_record_edit(req: Request<Incoming>, pool: PgPool, id: Ulid) ->
             id: record.id.to_string(),
             notes: record.notes,
             amount: record.amount,
-            category_id: record.category_id.to_string(),
+            category_id: record.category_id,
             categories: &cats,
         };
         let html = template.render().expect("Should render markup");

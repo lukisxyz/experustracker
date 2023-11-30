@@ -78,8 +78,8 @@ pub async fn web_routes(
                 id_params_middleware(
                     req,
                     pool,
-                    15,
-                    "/category".to_string(),
+                    13,
+                    "/record".to_string(),
                     p.to_owned(),
                     page_record_edit,
                 )

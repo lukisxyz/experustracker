@@ -17,7 +17,7 @@
     <link rel="manifest" href="/manifest.json" />
     <script src="/htmx.min.js"></script>
   </head>
-  <body class="bg-slate-100">
+  <body class="bg-slate-100 h-screen overflow-y-hidden">
     <div
       id="menu-overlay"
       class="z-40 w-screen hidden h-screen bg-black/30 absolute left-0 top-0"
@@ -143,7 +143,11 @@
           <span class="sr-only">Create New Record</span>
         </a>
       </header>
-      <main class="max-w-lg p-4 mx-auto w-full" hx-ext="response-targets">
+      <main
+        id="main-dashboard"
+        class="overflow-y-auto max-h-screen max-w-lg p-4 mx-auto w-full"
+        hx-ext="response-targets"
+      >
         {% block content %}{% endblock %}
       </main>
       <footer class=""></footer>
@@ -172,7 +176,9 @@
     </button>
     <script>
       function backToTop() {
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        document
+          .getElementById("main-dashboard")
+          .scrollTo({ top: 0, behavior: "smooth" });
       }
       document.body.addEventListener("logoutSuccess", function (evt) {
         window.location.replace("/login");
